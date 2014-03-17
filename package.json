@@ -1,0 +1,38 @@
+{
+  "name": "mitzy",
+  "version": "1.0.0",
+  "description": "A simple IRC bot for #reddit on freenode",
+  "author": {
+    "name": "Peter Holak",
+    "email": "peterholak@gmail.com",
+    "url": "http://www.holak.net/"
+  },
+  "keywords": [
+    "irc",
+	"bot"
+  ],
+  "main": "./mitzy",
+  "engines": {
+    "node": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/peterholak/mitzy-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/peterholak/mitzy-bot/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ],
+  "dependencies": {
+    "moment-timezone": ">= 0.0.3",
+    "irc": ">= 0.3.6",
+    "nedb": ">= 0.10.0",
+    "strftime": ">= 0.7.0",
+    "extend": ">= 1.2.1",
+    "async": ">= 0.2.10"
+  }
+}
