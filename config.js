@@ -16,35 +16,35 @@ datadir: './data',
 ignoreBots: [ 'rbarrybot' ],
 
 commands: [
-	'seen',
-	'sayshit',
-	'timezone',
-	'subreddit',
-	'source',
-	'stats11'
+    'seen',
+    'sayshit',
+    'timezone',
+    'subreddit',
+    'source',
+    'stats11'
 ],
 
 rateLimit: {
-	'global': [{'interval': 5, 'messages': 10}, {'interval': 60, 'messages': 30}],
-	'perUser': [{'interval': 5, 'messages': 5}, {'interval': 60, 'messages': 10}]
+    'global': [{'interval': 5, 'messages': 10}, {'interval': 60, 'messages': 30}],
+    'perUser': [{'interval': 5, 'messages': 5}, {'interval': 60, 'messages': 10}]
 },
 
 commandConfig: {
-	sayshit: {
-		data: [
-			{ 'regex': /html5/i, 'probability': (1/5), 'shit': [
-				'HTML5 programming! And cloud technologies!',
-				'The world would be so much nicer if there was more HTML5 programming.'
-			]},
-			{ 'regex': /fedora/i, 'probability': (1/10), 'shit': [
-				'dae le fedora redditors?'
-			]}
-		]
-	},
+    sayshit: {
+        data: [
+            { 'regex': /html5/i, 'probability': (1/5), 'shit': [
+                'HTML5 programming! And cloud technologies!',
+                'The world would be so much nicer if there was more HTML5 programming.'
+            ]},
+            { 'regex': /fedora/i, 'probability': (1/10), 'shit': [
+                'dae le fedora redditors?'
+            ]}
+        ]
+    },
 
-	source: {
-		url: 'https://github.com/peterholak/mitzy-bot'
-	}
+    source: {
+        url: 'https://github.com/peterholak/mitzy-bot'
+    }
 }
 
 };
