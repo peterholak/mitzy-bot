@@ -38,6 +38,9 @@ commandConfig: {
             ]},
             { 'regex': /fedora/i, 'probability': (1/10), 'shit': [
                 'dae le fedora redditors?'
+            ]},
+            { 'regex': /^\.$/i, 'probability' : (1/1), 'nick':'funnynickname', 'shit': [
+                'Congrats funnynickname! You're connected!'
             ]}
         ]
     },
