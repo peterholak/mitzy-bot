@@ -99,7 +99,7 @@ function runBot() {
     });
 }
 
-setTimeout(function() {
+setInterval(function() {
     var now = new Date().getTime();
     if (now - lastReceivedTime > config.commandTimeout) {
         console.log("Connection lost, reconnecting...");
