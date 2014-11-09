@@ -15,13 +15,17 @@ network: 'chat.freenode.net',
 datadir: './data',
 ignoreBots: [ 'rbarrybot' ],
 
+commandTimeout: 600000,
+timeoutCheckInterval: 10000,
+
 commands: [
     'seen',
     'sayshit',
     'timezone',
     'subreddit',
     'source',
-    'stats11'
+    'stats11',
+    'ping'
 ],
 
 rateLimit: {
