@@ -16,11 +16,15 @@ function Command(bot, options) {
 
 Command.prototype.process = function(params, target, nick) {
     
-}
+};
 
 Command.prototype.init = function() {
 
-}
+};
+
+Command.prototype.cleanup = function() {
+
+};
 
 Command.prototype.postMessageHook = function(nick, text, message) {
 

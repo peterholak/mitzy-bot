@@ -19,7 +19,11 @@ Seen.prototype.init = function() {
     });
     this.db.persistence.setAutocompactionInterval(3600000);
     this.db.ensureIndex({ fieldName: 'nick', unique: true });
-}
+};
+
+Seen.prototype.cleanup = function() {
+    this.db.persistence.stopAutocompaction();
+};
 
 Seen.prototype.process = function(params, target, nick) {
     var self = this;
@@ -64,4 +68,4 @@ Seen.prototype.postMessageHook = function(nick, text, message) {
     self.db.remove({ nick: nick }, {}, function(err, numRemoved) {
         self.db.insert({ nick: nick, when: new Date().getTime(), what: text });
     });
-}
+};

@@ -32,6 +32,11 @@ Stats11.prototype.init = function() {
     this.interval = setInterval(this.everyMinute.bind(this), 60000);
 };
 
+Stats11.prototype.cleanup = function() {
+    this.db.persistence.stopAutocompaction();
+    clearInterval(this.interval);
+};
+
 Stats11.prototype.process = function(params, target, nick) {
 
     // a more advanced database system (with aggregate functions etc.)
@@ -258,7 +263,7 @@ Stats11.prototype.dayStringToDate = function(dayStr) {
     return new Date(
         Date.UTC(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]))
     );
-}
+};
 
 Stats11.prototype.process5DaysStatDay = function(date, success) {
     var daysOfWeek = [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ];
@@ -278,4 +283,4 @@ Stats11.prototype.loadTodayIfExists = function() {
 //format nick to prevent highlighting the user
 Stats11.prototype.formatNick = function(nick) {
     return nick[0] + ' ' + nick.substring(1);
-}
+};

@@ -27,7 +27,11 @@ TimeZone.prototype.init = function() {
     });
     this.db.persistence.setAutocompactionInterval(5400000);
     this.db.ensureIndex({ fieldName: 'nick', unique: true });
-}
+};
+
+TimeZone.prototype.cleanup = function() {
+    this.db.persistence.stopAutocompaction();
+};
 
 TimeZone.prototype.process = function(params, target, nick) {
     if (params.length > 1 && params[0] === 'reg') {

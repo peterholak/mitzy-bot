@@ -70,4 +70,10 @@ CommandManager.prototype.showHelp = function(params, target) {
     }
 };
 
+CommandManager.prototype.cleanup = function() {
+    for (var i in this.commands) {
+        this.commands[i].cleanup();
+    }
+};
+
 module.exports = CommandManager;

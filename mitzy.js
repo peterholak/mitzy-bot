@@ -8,6 +8,7 @@ var fs = require('fs');
 
 var lastReceivedTime;
 var bot;
+var commands;
 
 function runBot() {
     lastReceivedTime = new Date().getTime();
@@ -33,7 +34,7 @@ function runBot() {
         bot.fakeBotCommandLine();
     }
 
-    var commands = new CommandManager(bot, {chan: config.channel});
+    commands = new CommandManager(bot, {chan: config.channel});
     commands.init();
 
     var commandRegex = /^\%m ([a-zA-Z0-9]+) ?(.*)?/i;
@@ -102,6 +103,7 @@ setTimeout(function() {
     var now = new Date().getTime();
     if (now - lastReceivedTime > config.commandTimeout) {
         console.log("Connection lost, reconnecting...");
+        commands.cleanup();
         bot.disconnect();
         runBot();
     }
