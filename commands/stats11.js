@@ -4,14 +4,16 @@ var strftime = require('strftime');
 var tz = require('moment-timezone');
 var config = require('../config');
 var async = require('async');
+var fs = require('fs');
 
 var Stats11 = Command.define(module, {
     command: 'stats11',
-    help: '11:11 stats',
+    help: '11:11 stats, use the "raw" argument to get a link to the raw data',
     decided1111: false,
     todaySuccess: false,
     currentChain: 0,
-    longestChain: 0
+    longestChain: 0,
+    hasHttpInterface: true
 });
 
 Stats11.prototype.init = function() {
@@ -38,6 +40,12 @@ Stats11.prototype.cleanup = function() {
 };
 
 Stats11.prototype.process = function(params, target, nick) {
+
+    if (params[0] === 'raw') {
+        var port = (config.http.port === 80 ? '' : (':' + config.http.port));
+        this.bot.say(target, 'Raw data can be found at http://' + config.http.hostname + port + '/stats11');
+        return;
+    }
 
     // a more advanced database system (with aggregate functions etc.)
     // would make this part so much easier...
@@ -283,4 +291,12 @@ Stats11.prototype.loadTodayIfExists = function() {
 //format nick to prevent highlighting the user
 Stats11.prototype.formatNick = function(nick) {
     return nick[0] + ' ' + nick.substring(1);
+};
+
+Stats11.prototype.processHttp = function(path, response) {
+    response.writeHead(200, {
+        'Content-Type': 'application/json'
+    });
+    var rawData = fs.readFileSync(config.datadir + '/stats11.db');
+    response.write(rawData);
 };

@@ -48,6 +48,6 @@ BotFake.prototype.fakeBotCommandLine = function() {
         }
         self.rl.prompt();
     });
-}
+};
 
 module.exports = BotFake;

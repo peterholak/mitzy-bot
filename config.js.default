@@ -18,6 +18,11 @@ ignoreBots: [ 'rbarrybot' ],
 commandTimeout: 600000,
 timeoutCheckInterval: 10000,
 
+http: {
+    port: 8011,
+    hostname: 'localhost'
+},
+
 commands: [
     'seen',
     'sayshit',

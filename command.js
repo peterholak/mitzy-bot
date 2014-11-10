@@ -12,6 +12,7 @@ function Command(bot, options) {
     this.notCallable = false;
 
     this.ignoreBots = true;
+    this.hasHttpInterface = false;
 }
 
 Command.prototype.process = function(params, target, nick) {
@@ -27,6 +28,10 @@ Command.prototype.cleanup = function() {
 };
 
 Command.prototype.postMessageHook = function(nick, text, message) {
+
+};
+
+Command.prototype.processHttp = function(path, response) {
 
 };
 

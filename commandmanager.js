@@ -70,6 +70,12 @@ CommandManager.prototype.showHelp = function(params, target) {
     }
 };
 
+CommandManager.prototype.processHttp = function(cmd, path, response) {
+    if (this.commandsCmd.hasOwnProperty(cmd) && this.commandsCmd[cmd].hasHttpInterface) {
+        this.commandsCmd[cmd].processHttp(path, response);
+    }
+};
+
 CommandManager.prototype.cleanup = function() {
     for (var i in this.commands) {
         this.commands[i].cleanup();

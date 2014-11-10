@@ -5,10 +5,28 @@ var RateLimit = require('./utils/rate-limit');
 var config = require('./config');
 var strftime = require('strftime');
 var fs = require('fs');
+var http = require('http');
 
 var lastReceivedTime;
 var bot;
 var commands;
+
+function runHttpServer() {
+    http.createServer(function(request, response) {
+        var secondSlashPos = request.url.indexOf('/', 1);
+        var cmd, path;
+        if (secondSlashPos !== -1) {
+            cmd = request.url.substring(1, secondSlashPos);
+            path = request.url.substring(secondSlashPos);
+        }else {
+            cmd = request.url.substring(1);
+            path = '';
+        }
+        commands.processHttp(cmd, path, response);
+        response.end();
+    }).listen(config.http.port);
+    console.log('HTTP server running...');
+}
 
 function runBot() {
     lastReceivedTime = new Date().getTime();
@@ -99,14 +117,17 @@ function runBot() {
     });
 }
 
-setInterval(function() {
-    var now = new Date().getTime();
-    if (now - lastReceivedTime > config.commandTimeout) {
-        console.log("Connection lost, reconnecting...");
-        commands.cleanup();
-        bot.disconnect();
-        runBot();
-    }
-}, config.timeoutCheckInterval);
+if (!config.useFakeBot) {
+    setInterval(function () {
+        var now = new Date().getTime();
+        if (now - lastReceivedTime > config.commandTimeout) {
+            console.log("Connection lost, reconnecting...");
+            commands.cleanup();
+            bot.disconnect();
+            runBot();
+        }
+    }, config.timeoutCheckInterval);
+}
 
+runHttpServer();
 runBot();
