@@ -1,4 +1,5 @@
 var readline = require('readline');
+var config = require('../config');
 
 function BotFake() {
     this.listeners = {};
@@ -13,8 +14,9 @@ BotFake.prototype.say = function(target, text) {
 };
 
 BotFake.prototype.on = function(what, callback) {
-    if (!this.listeners.hasOwnProperty(what))
+    if (!this.listeners.hasOwnProperty(what)) {
         this.listeners[what] = [];
+    }
     this.listeners[what].push(callback);
 };
 
@@ -42,7 +44,7 @@ BotFake.prototype.fakeBotCommandLine = function() {
                 if (line.split(' ')[0] === 'pm') {
                     self.trigger('pm', [ 'itamz', line.substr(3) ]);
                 }else{
-                    self.trigger('message#reddit', [ 'itamz', line ]);
+                    self.trigger('message' + config.channel, [ 'itamz', line ]);
                 }
                 break;
         }

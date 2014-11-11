@@ -79,13 +79,18 @@ Stats11.prototype.process = function(params, target, nick) {
 
         var topUsers = '';
         for (var i=0; i<results.successes.topNicks.length && i<5; i++) {
-            if (topUsers.length > 0)
+            if (topUsers.length > 0) {
                 topUsers += ', ';
+            }
             topUsers += this.formatNick(results.successes.topNicks[i].key) + ' (' + 
                 results.successes.topNicks[i].value + ')';
         }
-        
-        this.bot.say(target, 'Top users: ' + topUsers);
+
+        var latestUser = '';
+        if (results.successes.latest.nick) {
+            latestUser = ' | latest: ' + this.formatNick(results.successes.latest.nick);
+        }
+        this.bot.say(target, 'Top users: ' + topUsers + latestUser);
 
         this.bot.say(target, 'Last 5 weekdays: ' + results.last5Days);
     }).bind(this));
@@ -194,19 +199,25 @@ Stats11.prototype.updateCurrentChain = function() {
 };
 
 Stats11.prototype.loadSuccessStats = function(callback) {
+    var latest = { day: '1970-01-01', nick: null };
     this.db.find({ success: true }, function(err, docs) {
         var grouped = {};
         for (var i=0; i<docs.length; i++) {
             if (!grouped.hasOwnProperty(docs[i].nick))
                 grouped[docs[i].nick] = 0;
             grouped[docs[i].nick]++;
+
+            if (docs[i].day > latest.day) {
+                latest.day = docs[i].day;
+                latest.nick = docs[i].nick;
+            }
         }
 
         var sorted = Stats11.toArray(grouped).sort(function(a, b) {
             return (a.value > b.value ? -1 : (a.value < b.value ? 1 : 0));
         });
 
-        callback(null, { count: docs.length, topNicks: sorted });
+        callback(null, { count: docs.length, topNicks: sorted, latest: latest });
     });
 };
 
