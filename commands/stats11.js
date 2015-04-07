@@ -1,6 +1,6 @@
 var Command = require('../command.js');
 var Datastore = require('nedb');
-var strftime = require('strftime');
+var strftime = require('strftime').utc();
 var tz = require('moment-timezone');
 var config = require('../config');
 var async = require('async');
@@ -126,7 +126,7 @@ Stats11.prototype.isMessage1111 = function(text) {
 Stats11.prototype.getDayString = function(dateObj) {
     if (typeof dateObj === 'undefined')
         dateObj = new Date();
-    return strftime.strftimeUTC('%F', dateObj);
+    return strftime('%F', dateObj);
 };
 
 Stats11.prototype.writeRecord = function(success, nick) {

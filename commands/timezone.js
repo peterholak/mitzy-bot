@@ -1,22 +1,27 @@
 var Command = require('../command.js');
 var config = require('../config.js');
 var Datastore = require('nedb');
-var tz = require('moment-timezone');
+var moment = require('moment-timezone');
 
 var aliases = {
-    'CST': 'America/Chicago',
-    'PST': 'America/Los_Angeles'
+    CST: 'Etc/GMT-6',
+    CDT: 'Etc/GMT-5',
+    PST: 'Etc/GMT-8',
+    PDT: 'Etc/GMT-7',
+    EDT: 'Etc/GMT-4',
+    MST: 'Etc/GMT-7',
+    MDT: 'Etc/GMT-6',
+    BST: 'Etc/GMT+1'
 };
 
 var TimeZone = Command.define(module, {
     command: 'tz',
     minParams: 1,
     help: 'Show current time in specified timezone.\n' +
-        'Usage: tz [timezone], Example: tz EST, tz Europe/Berlin, ...\n' + 
+        'Usage: tz [timezone], Example: tz EST, tz Europe/Berlin, ...\n' +
+        'Search timezones: tz search [timezone], Example: tz search europe\n' +
         'Register your own timezone: tz reg [timezone], ' + 
-        'then others can query your nickname with: tz nick [nickname]\n' +
-        'Improvements (like a city database, more timezones recognized by name etc. ' +
-        'coming soon',
+        'then others can query your nickname with: tz nick [nickname]',
     timeFormat: 'YYYY-MM-DD hh:mm:ssA z(Z)'
 });
 
@@ -38,29 +43,46 @@ TimeZone.prototype.process = function(params, target, nick) {
         this.handleNicknameRegister(params, target, nick);
     }else if (params.length > 1 && params[0] === 'nick') {
         this.getNicknameTime(params, target, nick);
-    }else{
+    }else if (params.length > 1 && params[0] === 'search') {
+        this.bot.say(
+            target,
+            '[' + this.searchTimeZones(
+                params.slice(1).join('_')
+            ).join(', ') + ']'
+        );
+    }
+    else{
         var zone = this.getTimeZone(params[0]);
         if (zone) {
             this.bot.say(target, zone.format(this.timeFormat));
+        }else{
+            this.bot.say(target, 'Unknown time zone');
         }
     }
 };
 
-//TODO: have normal checks
+
 TimeZone.prototype.getTimeZone = function(zone) {
-    try {
-        var z = tz().tz(zone);
-        return z;
-    }catch(e){
-        if (zone.toUpperCase() in aliases) {
-            try {
-                var z = tz().tz(aliases[zone.toUpperCase()]);
-                return z;
-            }catch(e2){
-            }
-        }
+    if (moment.tz.zone(zone) !== null) {
+        return moment.tz(zone);
+    }else if (aliases.hasOwnProperty(zone.toUpperCase()) && moment.tz.zone(aliases[zone.toUpperCase()]) !== null) {
+        return moment.tz(aliases[zone.toUpperCase()]);
     }
     return null;
+};
+
+TimeZone.prototype.searchTimeZones = function(query) {
+    var results = [];
+    for (var z in moment.tz._zones) {
+        if (!moment.tz._zones.hasOwnProperty(z) || !moment.tz._zones[z].hasOwnProperty('name')) {
+            continue;
+        }
+
+        if (moment.tz._zones[z].name.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+            results.push(moment.tz._zones[z].name);
+        }
+    }
+    return results;
 };
 
 TimeZone.prototype.handleNicknameRegister = function(params, target, nick) {
