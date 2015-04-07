@@ -1,5 +1,5 @@
 var Datastore = require('nedb');
-var strftime = require('strftime');
+var strftime = require('strftime').utc();
 var Command = require('../command.js');
 var config = require('../config.js');
 
@@ -40,22 +40,22 @@ Seen.prototype.process = function(params, target, nick) {
                 self.bot.say(target, 'Database seems to be empty');
             }else{
                 var lastseen = docs[0];
-                var timeStr = strftime.strftimeTZ('%F %T', new Date(lastseen.when), 0);
+                var timeStr = strftime('%F %T', new Date(lastseen.when));
                 self.bot.say(target, 'Last person seen was \'' + 
                     lastseen.nick + '\' at ' + timeStr + ' GMT saying: "' + 
                     lastseen.what + '"');
             }
         });
     }else{
-        self.db.findOne({ nick: params[0] }, function(err, lastseen) {
+        self.db.findOne({ lower: params[0].toLowerCase() }, function(err, lastseen) {
             if (err) {
                 console.log('An error occured');
             }else if (lastseen === null) {
                 self.bot.say(target, 'Never seen nick \'' + params[0] + 
                     '\' in this channel since I came online.');
             }else{
-                var timeStr = strftime.strftimeTZ('%F %T', new Date(lastseen.when), 0);
-                self.bot.say(target, 'Nick \'' + params[0] + 
+                var timeStr = strftime('%F %T', new Date(lastseen.when));
+                self.bot.say(target, 'Nick \'' + lastseen.nick +
                     '\' was last seen in this channel ' + timeStr + ' GMT saying: "' + 
                     lastseen.what + '"');
             }
@@ -66,6 +66,6 @@ Seen.prototype.process = function(params, target, nick) {
 Seen.prototype.postMessageHook = function(nick, text, message) {
     var self = this;
     self.db.remove({ nick: nick }, {}, function(err, numRemoved) {
-        self.db.insert({ nick: nick, when: new Date().getTime(), what: text });
+        self.db.insert({ nick: nick, lower: nick.toLowerCase(), when: new Date().getTime(), what: text });
     });
 };
