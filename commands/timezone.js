@@ -4,14 +4,14 @@ var Datastore = require('nedb');
 var moment = require('moment-timezone');
 
 var aliases = {
-    CST: 'Etc/GMT-6',
-    CDT: 'Etc/GMT-5',
-    PST: 'Etc/GMT-8',
-    PDT: 'Etc/GMT-7',
-    EDT: 'Etc/GMT-4',
-    MST: 'Etc/GMT-7',
-    MDT: 'Etc/GMT-6',
-    BST: 'Etc/GMT+1'
+    CST: 'Etc/GMT+6',
+    CDT: 'Etc/GMT+5',
+    PST: 'Etc/GMT+8',
+    PDT: 'Etc/GMT+7',
+    EDT: 'Etc/GMT+4',
+    MST: 'Etc/GMT+7',
+    MDT: 'Etc/GMT+6',
+    BST: 'Etc/GMT-1'
 };
 
 var TimeZone = Command.define(module, {

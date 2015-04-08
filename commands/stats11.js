@@ -306,7 +306,7 @@ Stats11.prototype.formatNick = function(nick) {
 
 Stats11.prototype.processHttp = function(path, response) {
     response.writeHead(200, {
-        'Content-Type': 'application/json'
+        'Content-Type': 'text/plain'
     });
     var rawData = fs.readFileSync(config.datadir + '/stats11.db');
     response.write(rawData);
