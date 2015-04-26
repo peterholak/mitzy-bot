@@ -37,7 +37,7 @@ function createRealClient() {
         clientConfig['userName'] = config.irc.username;
     }
 
-    if (config.hasOwnProperty('password')) {
+    if (config.irc.password !== null) {
         clientConfig['password'] = config.irc.password;
     }
 
