@@ -1,0 +1,80 @@
+import ConfigInterface = require('./src/ConfigInterface');
+
+var config: ConfigInterface = {
+    useDummyClient: true,
+
+    http: {
+        hostname: 'localhost',
+        port: 8011
+    },
+
+    irc: {
+        network: 'chat.freenode.net',
+        port: 6667,
+        nick: 'mitzy-bot',
+        username: 'username-goes-here',
+        password: 'password-goes-here',
+        channel: '#reddit',
+        timeout: 600000,
+        timeoutCheckInterval: 10000
+    },
+
+    storageDirectory: './storage',
+    knownBots: [ 'reddit-bot' ],
+
+    plugins: [
+        'Ping',
+        'Ntpq',
+        'SayShit',
+        'Seen',
+        'Source',
+        'Stats11',
+        'Subreddit',
+        'Timezone',
+        'Eval'
+    ],
+
+    pluginConfig: {
+        SayShit: {
+            data: [
+                { regex: /html5/i, probability: (1/5), 'shit': [
+                    'HTML5 programming! And cloud technologies!',
+                    'The world would be so much nicer if there was more HTML5 programming.'
+                ]},
+                { regex: /fedora/i, probability: (1/10), 'shit': [
+                    'dae le fedora redditors?'
+                ]}
+            ]
+        },
+
+        Source: {
+            url: 'https://github.com/peterholak/mitzy-bot'
+        },
+
+        Stats11: {
+            storageClass: 'SqliteStats11Storage'
+        },
+
+        Eval: {
+            host: 'eval-server-host-here',
+            commandAliases: [
+                'c', 'c-m', 'js', 'javascript', 'php', 'php-x', 'py', 'python', 'py-x', 'python-x',
+                'rkt', 'racket', 'rb', 'ruby', 'rb-x', 'ruby-x'
+            ],
+            languageAliases: {
+                'c-m': 'c-nomain',
+                'rkt': 'racket',
+                'javascript': 'js',
+                'py': 'python',
+                'py-x': 'python-exec',
+                'python-x': 'python-exec',
+                'php-x': 'php-exec',
+                'rb': 'ruby',
+                'rb-x': 'ruby-exec',
+                'ruby-x': 'ruby-exec'
+            }
+        }
+    }
+};
+
+export = config;

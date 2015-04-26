@@ -1,6 +1,6 @@
 {
   "name": "mitzy",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A simple IRC bot for #reddit on freenode",
   "author": {
     "name": "Peter Holak",
@@ -9,11 +9,11 @@
   },
   "keywords": [
     "irc",
-	"bot"
+    "bot"
   ],
-  "main": "./mitzy",
+  "main": "./bin/run-mitzy",
   "engines": {
-    "node": "*"
+    "node": ">= 0.12"
   },
   "repository": {
     "type": "git",
@@ -29,11 +29,18 @@
   ],
   "dependencies": {
     "moment-timezone": ">= 0.3.1",
-    "irc": "= 0.3.6",
+    "irc": ">= 0.3.6",
     "nedb": ">= 0.10.0",
     "strftime": ">= 0.9.0",
-    "extend": ">= 1.2.1",
     "async": ">= 0.2.10",
-    "sync-exec": ">= 0.4.0"
+    "sqlite3": ">= 3.0.5"
+  },
+  "devDependencies": {
+    "typescript": ">= 1.4.0",
+    "tsunit.external": ">= 1.7.3",
+    "gulp": ">= 3.8.11",
+    "merge-stream": ">= 0.1.7",
+    "gulp-shell": ">= 0.4.1",
+    "gulp-tsc": ">= 0.9.4"
   }
 }
