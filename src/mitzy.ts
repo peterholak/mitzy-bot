@@ -131,8 +131,10 @@ export function registerClientEvents(responseMaker: ircWrapper.IrcResponseMaker,
         pluginRegistry.plugins.forEach( p => p.onMessagePosted(message, nick) );
     });
 
-    client.addListener('notice', function(nick:string, message:string) {
-        notifyMatchingPlugin(responseMaker, pluginRegistry, message, commandRegex, nick, nick, Plugin.MessageType.Notice);
+    client.addListener('notice', function(nick:string, to:string, message:string) {
+        if (to === config.irc.nick) {
+            notifyMatchingPlugin(responseMaker, pluginRegistry, message, commandRegex, nick, nick, Plugin.MessageType.Notice);
+        }
     });
 
     client.addListener('pm', function(nick:string, message:string) {
