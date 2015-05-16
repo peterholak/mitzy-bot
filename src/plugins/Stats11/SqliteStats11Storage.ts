@@ -123,7 +123,7 @@ class SqliteStats11Storage implements stats11Storage.Stats11Storage {
     }
 
     writeLongestChain(longestChain: number) {
-        this.db.run("INSERT INTO stats11_chain(longest_chain) VALUES(?)", [ longestChain ]);
+        this.db.run("UPDATE stats11_chain SET longest_chain = ?", [ longestChain ]);
     }
 
     writeRecord(day: string, success: boolean, nick: string, callback: () => void) {
