@@ -14,11 +14,15 @@ export interface UserStats {
     latestUser: string;
 }
 
+export enum DayStatus {
+    Undecided, Success, Failure
+}
+
 export interface Stats11Storage {
     loadSuccessRate(callback: AsyncResultCallback<SuccessRateStats>);
     loadUserStats(callback: AsyncResultCallback<UserStats>);
     loadLatestFailure(callback: AsyncResultCallback<string>);
-    loadDaySuccess(day: string, callback: (boolean) => void);
+    loadDaySuccess(day: string, callback: (DayStatus) => void);
     loadLongestChain(callback: (number) => void);
     loadCurrentChain(callback: (number) => void);
     writeRecord(day: string, success: boolean, nick: string, callback: () => void);

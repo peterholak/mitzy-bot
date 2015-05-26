@@ -26,6 +26,7 @@ class Stats11 extends Plugin.Plugin {
     private currentChain = 0;
     private longestChain = 0;
     private todaysWinnerDecided = false;
+    private todaysEntryWritten = false;
     private timezone = 'America/New_York'; // TODO: configurable
     private interval;
 
@@ -77,8 +78,9 @@ class Stats11 extends Plugin.Plugin {
     }
 
     private loadTodaysWinnerStatus(callback: AsyncResultCallback<any>) {
-        this.storage.loadDaySuccess(this.todayYmd(), (success: boolean) => {
-            this.todaysWinnerDecided = success;
+        this.storage.loadDaySuccess(this.todayYmd(), (success: stats11Storage.DayStatus) => {
+            this.todaysWinnerDecided = (success === stats11Storage.DayStatus.Success);
+            this.todaysEntryWritten = (success !== stats11Storage.DayStatus.Undecided);
             callback(null, null);
         });
     }
@@ -108,20 +110,23 @@ class Stats11 extends Plugin.Plugin {
     private everyMinute() {
         var nowVs11 = this.nowVs1111();
 
-        if (nowVs11 === TimeComparedTo11.After && !this.todaysWinnerDecided && this.isWeekDay()) {
+        if (nowVs11 === TimeComparedTo11.After && !this.todaysWinnerDecided && !this.todaysEntryWritten && this.isWeekDay()) {
             this.writeFailure();
         }
 
         if (nowVs11 === TimeComparedTo11.Before) {
             this.todaysWinnerDecided = false;
+            this.todaysEntryWritten = false;
         }
     }
 
     private writeSuccess(nick: string) {
+        this.todaysEntryWritten = true;
         this.storage.writeRecord(this.todayYmd(), true, nick, this.updateCurrentChain.bind(this));
     }
 
     private writeFailure() {
+        this.todaysEntryWritten = true;
         this.storage.writeRecord(this.todayYmd(), false, null, this.updateCurrentChain.bind(this));
     }
 

@@ -86,11 +86,15 @@ class SqliteStats11Storage implements stats11Storage.Stats11Storage {
         });
     }
 
-    loadDaySuccess(day: string, callback: (boolean) => void) {
+    loadDaySuccess(day: string, callback: (status: stats11Storage.DayStatus) => void) {
         this.db.get("SELECT success FROM stats11 WHERE day = ?", [ day ], (err, row) => {
             // good enough, see comment in loadLongestChains
             if (err) { throw err; }
-            callback(row !== undefined && row.success === 1);
+
+            if (row === undefined) {
+                callback(stats11Storage.DayStatus.Undecided);
+            }
+            callback(row.success === 1 ? stats11Storage.DayStatus.Success : stats11Storage.DayStatus.Failure);
         });
     }
 
@@ -128,7 +132,7 @@ class SqliteStats11Storage implements stats11Storage.Stats11Storage {
 
     writeRecord(day: string, success: boolean, nick: string, callback: () => void) {
         this.db.run(
-            "INSERT INTO stats11(day, success, nick) VALUES(?, ?, ?)",
+            "INSERT OR IGNORE INTO stats11(day, success, nick) VALUES(?, ?, ?)",
             [ day, success ? 1 : 0, nick ],
             (err) => {
                 if (err) { throw err; }
