@@ -10,3 +10,5 @@ src/**/*.js.map
 tests/**/*.js
 tests/**/*.js.map
 node_modules/
+typings/
+npm-debug.log

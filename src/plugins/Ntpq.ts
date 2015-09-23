@@ -1,4 +1,4 @@
-///<reference path="../../lib/node/node.d.ts"/>
+///<reference path="../../typings/node/node.d.ts"/>
 import child_process = require('child_process');
 import Plugin = require('../Plugin');
 import http = require('http');

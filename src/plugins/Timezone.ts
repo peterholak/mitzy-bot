@@ -1,7 +1,7 @@
-///<reference path="../../lib/node/node.d.ts"/>
-///<reference path="../../lib/nedb/nedb.d.ts"/>
-///<reference path="../../lib/moment/moment.d.ts"/>
-///<reference path="../../lib/moment-timezone/moment-timezone.d.ts"/>
+///<reference path="../../typings/node/node.d.ts"/>
+///<reference path="../../typings/nedb/nedb.d.ts"/>
+///<reference path="../../typings/moment/moment.d.ts"/>
+///<reference path="../../typings/moment-timezone/moment-timezone.d.ts"/>
 import Plugin = require('../Plugin');
 import NeDB = require('nedb');
 import momentTz = require('moment-timezone');

@@ -1,4 +1,4 @@
-///<reference path="../../lib/node/node.d.ts"/>
+///<reference path="../../typings/node/node.d.ts"/>
 import Plugin = require('../Plugin');
 import http = require('http');
 import querystring = require('querystring');

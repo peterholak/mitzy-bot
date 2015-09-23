@@ -1,5 +1,5 @@
-///<reference path="../../../lib/async/async.d.ts"/>
-///<reference path="../../../lib/node/node.d.ts"/>
+///<reference path="../../../typings/async/async.d.ts"/>
+///<reference path="../../../typings/node/node.d.ts"/>
 import ConfigInterface = require('../../ConfigInterface');
 import url = require('url');
 import http = require('http');

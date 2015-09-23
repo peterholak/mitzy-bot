@@ -1,6 +1,6 @@
-///<reference path="../../../lib/node/node.d.ts"/>
-///<reference path="../../../lib/sqlite3/sqlite3.d.ts"/>
-///<reference path="../../../lib/async/async.d.ts"/>
+///<reference path="../../../typings/node/node.d.ts"/>
+///<reference path="../../../typings/sqlite3/sqlite3.d.ts"/>
+///<reference path="../../../typings/async/async.d.ts"/>
 import sqlite3 = require('sqlite3');
 import fs = require('fs');
 import async = require('async');

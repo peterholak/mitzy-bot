@@ -1,4 +1,4 @@
-///<reference path="../lib/node/node.d.ts"/>
+///<reference path="../typings/node/node.d.ts"/>
 import http = require('http');
 import url = require('url');
 import ConfigInterface = require('./ConfigInterface');

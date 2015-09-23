@@ -1,4 +1,4 @@
-///<reference path="../../lib/node/node.d.ts"/>
+///<reference path="../../typings/node/node.d.ts"/>
 import readline = require('readline');
 
 class DummyIrcClient {
@@ -48,7 +48,7 @@ class DummyIrcClient {
     }
 
     startReadingCommandLine() {
-        this.commandLine.setPrompt('M> ', undefined);
+        this.commandLine.setPrompt('M> ');
         this.commandLine.prompt();
         this.commandLine.on('line', this.onCommandLine.bind(this));
     }

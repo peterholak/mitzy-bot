@@ -1,4 +1,4 @@
-///<reference path="../../lib/nedb/nedb.d.ts"/>
+///<reference path="../../typings/nedb/nedb.d.ts"/>
 import Plugin = require('../Plugin');
 import NeDB = require('nedb');
 import ircWrapper = require('../irc/ircWrapper');

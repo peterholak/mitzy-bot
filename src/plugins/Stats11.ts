@@ -1,7 +1,7 @@
-///<reference path="../../lib/moment/moment.d.ts"/>
-///<reference path="../../lib/moment-timezone/moment-timezone.d.ts"/>
-///<reference path="../../lib/node/node.d.ts"/>
-///<reference path="../../lib/async/async.d.ts"/>
+///<reference path="../../typings/moment/moment.d.ts"/>
+///<reference path="../../typings/moment-timezone/moment-timezone.d.ts"/>
+///<reference path="../../typings/node/node.d.ts"/>
+///<reference path="../../typings/async/async.d.ts"/>
 import Plugin = require('../Plugin');
 import momentTz = require('moment-timezone');
 import stats11Storage = require('./Stats11/stats11Storage');
