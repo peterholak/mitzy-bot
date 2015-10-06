@@ -6,7 +6,7 @@ import config = require('./config');
 var responseMaker = new ircWrapper.IrcResponseMaker(mitzy.createIrcClient());
 var pluginRegistry = mitzy.initializePlugins(responseMaker);
 
-mitzy.registerClientEvents(responseMaker, pluginRegistry);
+mitzy.registerEventsAndConnect(responseMaker, pluginRegistry);
 
 mitzyHttp.runHttpServer(pluginRegistry, config.http.port);
 
@@ -16,7 +16,7 @@ mitzy.setupDisconnectCheck(config.irc.timeout, config.irc.timeoutCheckInterval, 
     responseMaker.getClient().disconnect();
 
     var newClient = mitzy.createIrcClient();
-    mitzy.registerClientEvents(responseMaker, pluginRegistry);
+    mitzy.registerEventsAndConnect(responseMaker, pluginRegistry);
 
     responseMaker.replaceClient(newClient);
 });

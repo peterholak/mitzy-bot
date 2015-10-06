@@ -11,6 +11,8 @@ var config: ConfigInterface = {
     irc: {
         network: 'chat.freenode.net',
         port: 6667,
+        secure: false,
+        selfSigned: false,
         nick: 'mitzy-bot',
         username: 'username-goes-here',
         password: 'password-goes-here',

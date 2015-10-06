@@ -92,9 +92,9 @@ class SqliteStats11Storage implements stats11Storage.Stats11Storage {
             if (err) { throw err; }
 
             if (row === undefined) {
-                callback(stats11Storage.DayStatus.Undecided);
+                return callback(stats11Storage.DayStatus.Undecided);
             }
-            callback(row.success === 1 ? stats11Storage.DayStatus.Success : stats11Storage.DayStatus.Failure);
+            return callback(row.success === 1 ? stats11Storage.DayStatus.Success : stats11Storage.DayStatus.Failure);
         });
     }
 

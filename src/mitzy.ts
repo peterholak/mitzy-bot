@@ -30,7 +30,11 @@ function createDummyClient() {
 function createRealClient() {
     var clientConfig = {
         channels: [ config.irc.channel ],
-        port: config.irc.port
+        port: config.irc.port,
+        secure: config.irc.secure === true,
+        selfSigned: config.irc.selfSigned === true,
+        autoConnect: false,
+        showErrors: true
     };
 
     if (config.irc.username !== null) {
@@ -123,10 +127,14 @@ export function initializePlugins(responseMaker: ircWrapper.IrcResponseMaker): P
     return pluginRegistry;
 }
 
-export function registerClientEvents(responseMaker: ircWrapper.IrcResponseMaker, pluginRegistry: PluginRegistry, commandRegex:RegExp = /^%m ([a-zA-Z0-9\-_]+) ?(.*)?/i) {
+export function registerEventsAndConnect(responseMaker: ircWrapper.IrcResponseMaker, pluginRegistry: PluginRegistry, commandRegex:RegExp = /^%m ([a-zA-Z0-9\-_]+) ?(.*)?/i) {
     var client = responseMaker.getClient();
 
     client.addListener('message' + config.irc.channel, function (nick:string, message:string) {
+        // ZNC buffer replays do not have nicks
+        if (nick === undefined) {
+            return;
+        }
         notifyMatchingPlugin(responseMaker, pluginRegistry, message, commandRegex, config.irc.channel, nick, Plugin.MessageType.ChannelMessage);
         pluginRegistry.plugins.forEach( p => p.onMessagePosted(message, nick) );
     });
@@ -150,8 +158,21 @@ export function registerClientEvents(responseMaker: ircWrapper.IrcResponseMaker,
         console.error(err);
     });
 
+    client.on('registered', function() {
+        console.log('Connected.');
+    });
+
+    client.on('join', function(channel, nick, message) {
+        if (nick === config.irc.nick) {
+            console.log('Channel joined.');
+        }
+    });
+
     if (config.useDummyClient) {
         client.startReadingCommandLine();
+    }else{
+        console.log('Connecting...');
+        client.connect();
     }
 }
 

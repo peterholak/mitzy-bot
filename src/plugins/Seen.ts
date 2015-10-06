@@ -42,21 +42,21 @@ class Seen extends Plugin.Plugin {
     }
 
     onMessagePosted(message: string, nick: string) {
-        this.db.remove({ nick: nick }, {}, (err, numRemoved) => {
-            if (err !== null) {
-                console.error(err);
+        this.db.update(
+            { nick: nick },
+            {
+                nick: nick,
+                lower: nick.toLowerCase(),
+                when: new Date().getTime(),
+                what: message
+            },
+            { upsert: true },
+            (err, numReplaced, newDocument) => {
+                if (err !== null) {
+                    console.error(err);
+                }
             }
-
-            this.db.insert(
-                {
-                    nick: nick,
-                    lower: nick.toLowerCase(),
-                    when: new Date().getTime(),
-                    what: message
-                },
-                err => { if (err) { console.error(err); } }
-            );
-        });
+        );
     }
 
     private outputLastMessageByAnyone(meta: ircWrapper.IrcMessageMeta) {

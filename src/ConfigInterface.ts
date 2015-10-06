@@ -6,6 +6,8 @@ interface HttpConfig {
 interface IrcConfig {
     network: string;
     port: number;
+    secure?: boolean;
+    selfSigned?: boolean;
     channel: string;
     nick: string;
     username: string;
