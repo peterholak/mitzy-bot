@@ -25,17 +25,14 @@ export class Plugin {
     ignoreBots: boolean = true
     hasHttpInterface:boolean = false
 
-    constructor(protected responseMaker: ircWrapper.IrcResponseMaker, protected config: ConfigInterface) {
-    }
+    constructor(
+        protected responseMaker: ircWrapper.IrcResponseMaker,
+        protected config: ConfigInterface
+    ) { }
 
-    onCommandCalled(command: ParsedCommand, meta: ircWrapper.IrcMessageMeta) {
-    }
-
-    onMessagePosted(message: string, nick: string) {
-    }
-
-    onHttpRequest(requestUrl: url.Url, response: http.ServerResponse) {
-    }
+    onCommandCalled(command: ParsedCommand, meta: ircWrapper.IrcMessageMeta) { }
+    onMessagePosted(message: string, nick: string) { }
+    onHttpRequest(requestUrl: url.Url, response: http.ServerResponse) { }
 }
 
 export default Plugin

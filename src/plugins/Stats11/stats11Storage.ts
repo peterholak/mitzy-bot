@@ -8,6 +8,7 @@ export interface SuccessRateStats {
 }
 
 export interface UserStats {
+    previousNDays: number
     topUsers: { [nick: string]: number }|{}
     latestUser: string
 }
@@ -18,7 +19,7 @@ export enum DayStatus {
 
 export interface Stats11Storage {
     loadSuccessRate(callback: AsyncResultCallback<SuccessRateStats>)
-    loadUserStats(callback: AsyncResultCallback<UserStats>)
+    loadUserStats(previousNDays: number, callback: AsyncResultCallback<UserStats>)
     loadLatestFailure(callback: AsyncResultCallback<string>)
     loadDaySuccess(day: string, callback: (DayStatus) => void)
     loadLongestChain(callback: (number) => void)

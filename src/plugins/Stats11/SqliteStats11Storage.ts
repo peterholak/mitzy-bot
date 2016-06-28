@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import * as async from 'async'
 import * as url from 'url'
 import * as http from 'http'
+import moment = require('moment')
 import { Stats11Storage, SuccessRateStats, UserStats, DayStatus } from './stats11Storage'
 import ConfigInterface from '../../ConfigInterface'
 
@@ -52,9 +53,20 @@ class SqliteStats11Storage implements Stats11Storage {
         })
     }
 
-    loadUserStats(callback: AsyncResultCallback<UserStats>) {
+    loadUserStats(previousNDays: number, callback: AsyncResultCallback<UserStats>) {
+        let dateLimit = ''
+        let queryParameters = []
+        if (previousNDays !== 0) {
+            queryParameters = [ moment().subtract(previousNDays, 'days').format('YYYY-MM-DD') ]
+            dateLimit = 'AND day >= ?'
+        }
+
         async.parallel({
-            top: cb => this.db.all("SELECT nick, COUNT(*) AS score FROM stats11 WHERE success = 1 GROUP BY nick ORDER BY score DESC LIMIT 5", cb),
+            top: cb => this.db.all(
+                "SELECT nick, COUNT(*) AS score FROM stats11 WHERE success = 1 " + dateLimit + " GROUP BY nick ORDER BY score DESC LIMIT 5",
+                queryParameters,
+                cb
+            ),
             latest: cb => this.db.get("SELECT nick FROM stats11 WHERE success = 1 ORDER BY day DESC LIMIT 1", cb)
         }, function(err, results: any) {
 
@@ -64,7 +76,8 @@ class SqliteStats11Storage implements Stats11Storage {
 
             var summary = {
                 topUsers: {},
-                latestUser: (results.latest ? results.latest.nick : 'none')
+                latestUser: (results.latest ? results.latest.nick : 'none'),
+                previousNDays: previousNDays
             }
 
             results.top.forEach( r => summary.topUsers[r.nick] = r.score )

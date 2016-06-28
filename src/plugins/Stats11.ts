@@ -1,14 +1,14 @@
 import { Plugin, ParsedCommand } from '../Plugin'
 import momentTz = require('moment-timezone')
-import * as stats11Storage from './Stats11/stats11Storage'
+import { UserStats, SuccessRateStats, Stats11Storage, DayStatus } from './Stats11/stats11Storage'
 import * as async from 'async'
 import * as url from 'url'
 import * as http from 'http'
 import { IrcMessageMeta } from '../irc/ircWrapper'
 
 interface Results {
-    successRate: stats11Storage.SuccessRateStats
-    userStats: stats11Storage.UserStats
+    successRate: SuccessRateStats
+    userStats: UserStats
     latestFailure: string
 }
 
@@ -18,12 +18,13 @@ enum ElevenTime {
 
 class Stats11 extends Plugin {
 
-    private storage: stats11Storage.Stats11Storage
+    private storage: Stats11Storage
     private currentChain = 0
     private longestChain = 0
     private todaysWinnerDecided = false
     private todaysEntryWritten = false
     private timezone = 'America/New_York' // TODO: configurable
+    private defaultLeaderboardTimespan = 30
     private interval
 
     constructor(responseMaker, config) {
@@ -32,6 +33,7 @@ class Stats11 extends Plugin {
         this.command = 'stats11'
         this.help = '11:11 stats. Use the "raw" arugment to get a link to raw data'
         this.hasHttpInterface = true
+        this.defaultLeaderboardTimespan = this.config.pluginConfig['Stats11'].defaultLeaderboardTimespan
 
         var storageClass = './Stats11/' + this.config.pluginConfig['Stats11'].storageClass
         var storageConstructor = require(storageClass).default
@@ -53,9 +55,14 @@ class Stats11 extends Plugin {
             return
         }
 
+        let leaderboardTimespan = this.defaultLeaderboardTimespan
+        if (!isNaN(Number(command.splitArguments[0]))) {
+            leaderboardTimespan = parseInt(command.splitArguments[0])
+        }
+
         async.parallel({
             successRate: this.storage.loadSuccessRate.bind(this.storage),
-            userStats: this.storage.loadUserStats.bind(this.storage),
+            userStats: this.storage.loadUserStats.bind(this.storage, leaderboardTimespan),
             latestFailure: this.storage.loadLatestFailure.bind(this.storage)
         }, (err, results: any) => {
             this.outputStats(meta, err, results)
@@ -74,9 +81,9 @@ class Stats11 extends Plugin {
     }
 
     private loadTodaysWinnerStatus(callback: AsyncResultCallback<any>) {
-        this.storage.loadDaySuccess(this.todayYmd(), (success: stats11Storage.DayStatus) => {
-            this.todaysWinnerDecided = (success === stats11Storage.DayStatus.Success)
-            this.todaysEntryWritten = (success !== stats11Storage.DayStatus.Undecided)
+        this.storage.loadDaySuccess(this.todayYmd(), (success: DayStatus) => {
+            this.todaysWinnerDecided = (success === DayStatus.Success)
+            this.todaysEntryWritten = (success !== DayStatus.Undecided)
             callback(null, null)
         })
     }
@@ -144,11 +151,20 @@ class Stats11 extends Plugin {
             false
         )
 
-        var topUserStrings = []
-        for (var user in results.userStats.topUsers) {
-            topUserStrings.push(this.formatNick(user) + ' (' + results.userStats.topUsers[user] + ')')
+        let topUsersPrefix = '\x02All-time\x02: '
+        if (results.userStats.previousNDays !== 0) {
+            topUsersPrefix = `\x02Past ${results.userStats.previousNDays} days\x02: `
         }
-        this.responseMaker.respond(meta, topUserStrings.join(', ') + ' | latest ' + this.formatNick(results.userStats.latestUser), false)
+
+        let topUserStrings = Object.keys(results.userStats.topUsers).map(user =>
+            `${this.formatNick(user)} (${results.userStats.topUsers[user]})`
+        )
+
+        this.responseMaker.respond(
+            meta,
+            topUsersPrefix + topUserStrings.join(', ') + ' | \x02latest\x02 ' + this.formatNick(results.userStats.latestUser),
+            false
+        )
     }
 
     private nowVs1111(): ElevenTime {
@@ -171,7 +187,7 @@ class Stats11 extends Plugin {
 
     /** formats nick to prevent highlighting the user */
     private formatNick(nick) {
-        return nick[0] + ' ' + nick.substring(1)
+        return nick[0] + "\u200b" + nick.substring(1)
     }
 
     private todayYmd() {
