@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/bin/src/run-mitzy.js",
+            "stopOnEntry": false,
+            "cwd": "${workspaceRoot}",
+            "externalConsole": true,
+            "sourceMaps": true,
+            "outDir": "${workspaceRoot}/bin"
+        }
+    ]
+}

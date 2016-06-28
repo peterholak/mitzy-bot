@@ -62,14 +62,14 @@ class SqliteStats11Storage implements Stats11Storage {
                 return callback(err, null)
             }
 
-            var result = {
+            var summary = {
                 topUsers: {},
                 latestUser: (results.latest ? results.latest.nick : 'none')
             }
 
-            results.top.forEach( r => result.topUsers[r.nick] = r.score )
+            results.top.forEach( r => summary.topUsers[r.nick] = r.score )
 
-            callback(err, result)
+            callback(err, summary)
         })
     }
 

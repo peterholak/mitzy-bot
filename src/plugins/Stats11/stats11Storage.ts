@@ -8,7 +8,7 @@ export interface SuccessRateStats {
 }
 
 export interface UserStats {
-    topUsers: Object
+    topUsers: { [nick: string]: number }|{}
     latestUser: string
 }
 
