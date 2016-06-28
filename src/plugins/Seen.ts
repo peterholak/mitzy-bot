@@ -1,9 +1,9 @@
-import * as Plugin from '../Plugin'
+import { Plugin, ParsedCommand } from '../Plugin'
 import * as NeDB from 'nedb'
-import * as ircWrapper from '../irc/ircWrapper'
+import { IrcMessageMeta } from '../irc/ircWrapper'
 var strftime = require('strftime').utc();
 
-class Seen extends Plugin.Plugin {
+class Seen extends Plugin {
 
     private db: NeDB;
 
@@ -26,7 +26,7 @@ class Seen extends Plugin.Plugin {
         this.db.ensureIndex({ fieldName: 'nick', unique: true });
     }
 
-    onCommandCalled(command: Plugin.ParsedCommand, meta: ircWrapper.IrcMessageMeta) {
+    onCommandCalled(command: ParsedCommand, meta: IrcMessageMeta) {
         // we actually do want to ignore bots so they can't call the command, but we also want to track
         // their last message, that's why ignoreBots is false and this check is here
         if (this.config.knownBots.indexOf(meta.nick) !== -1) {
@@ -58,7 +58,7 @@ class Seen extends Plugin.Plugin {
         );
     }
 
-    private outputLastMessageByAnyone(meta: ircWrapper.IrcMessageMeta) {
+    private outputLastMessageByAnyone(meta: IrcMessageMeta) {
         this.db
             .find({})
             .sort({ when: -1 })
@@ -83,7 +83,7 @@ class Seen extends Plugin.Plugin {
             });
     }
 
-    private outputLastMessageBy(nick, meta: ircWrapper.IrcMessageMeta) {
+    private outputLastMessageBy(nick, meta: IrcMessageMeta) {
         this.db.findOne({ lower: nick.toLowerCase() }, (err, lastSeen) => {
             if (err) {
                 this.responseMaker.respond(meta, 'An error occured');

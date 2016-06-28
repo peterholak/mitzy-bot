@@ -1,12 +1,12 @@
 import { Plugin } from './Plugin'
 import ConfigInterface from './ConfigInterface'
-import * as ircWrapper from './irc/ircWrapper'
+import { IrcResponseMaker } from './irc/ircWrapper'
 
 class PluginRegistry {
     plugins: Plugin[] = []
     pluginsByBotCommand: { [cmd: string]: Plugin } = {}
 
-    registerPlugin(name: string, responseMaker: ircWrapper.IrcResponseMaker, config: ConfigInterface, pluginDirectory: string = './plugins') {
+    registerPlugin(name: string, responseMaker: IrcResponseMaker, config: ConfigInterface, pluginDirectory: string = './plugins') {
         var path = pluginDirectory + '/' + name
         var plugin: Plugin = new (require(path).default)(responseMaker, config)
 

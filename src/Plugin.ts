@@ -1,7 +1,7 @@
 import * as http from 'http'
 import * as url from 'url'
 import ConfigInterface from './ConfigInterface'
-import * as ircWrapper from './irc/ircWrapper'
+import { IrcResponseMaker, IrcMessageMeta } from './irc/ircWrapper'
 
 export enum MessageType {
     ChannelMessage, Pm, Notice
@@ -26,11 +26,11 @@ export class Plugin {
     hasHttpInterface:boolean = false
 
     constructor(
-        protected responseMaker: ircWrapper.IrcResponseMaker,
+        protected responseMaker: IrcResponseMaker,
         protected config: ConfigInterface
     ) { }
 
-    onCommandCalled(command: ParsedCommand, meta: ircWrapper.IrcMessageMeta) { }
+    onCommandCalled(command: ParsedCommand, meta: IrcMessageMeta) { }
     onMessagePosted(message: string, nick: string) { }
     onHttpRequest(requestUrl: url.Url, response: http.ServerResponse) { }
 }

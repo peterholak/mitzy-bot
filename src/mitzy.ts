@@ -3,7 +3,7 @@ import * as url from 'url'
 import PluginRegistry from './PluginRegistry'
 import { Plugin, ParsedCommand, MessageType } from './Plugin'
 import DummyIrcClient from './irc/DummyIrcClient'
-import * as ircWrapper from './irc/ircWrapper'
+import { IrcResponseMaker, IrcMessageMeta } from './irc/ircWrapper'
 import config from '../config'
 import * as irc from 'irc'
 
@@ -67,7 +67,7 @@ export function parseCommand(message:string, commandRegex:RegExp): ParsedCommand
     }
 }
 
-function outputHelp(responseMaker: ircWrapper.IrcResponseMaker, pluginRegistry: PluginRegistry, messageMeta: ircWrapper.IrcMessageMeta, parsedCommand: ParsedCommand) {
+function outputHelp(responseMaker: IrcResponseMaker, pluginRegistry: PluginRegistry, messageMeta: IrcMessageMeta, parsedCommand: ParsedCommand) {
     if (
         parsedCommand.splitArguments.length === 0 ||
         !pluginRegistry.pluginsByBotCommand.hasOwnProperty(parsedCommand.splitArguments[0])
@@ -88,8 +88,8 @@ function outputHelp(responseMaker: ircWrapper.IrcResponseMaker, pluginRegistry: 
     return responseMaker.respond(messageMeta, plugin.help)
 }
 
-function notifyMatchingPlugin(responseMaker: ircWrapper.IrcResponseMaker, pluginRegistry: PluginRegistry, message, commandRegex, ircTarget: string, nick: string, messageType: MessageType) {
-    var meta: ircWrapper.IrcMessageMeta = {
+function notifyMatchingPlugin(responseMaker: IrcResponseMaker, pluginRegistry: PluginRegistry, message, commandRegex, ircTarget: string, nick: string, messageType: MessageType) {
+    var meta: IrcMessageMeta = {
         messageType: messageType,
         nick: nick,
         ircTarget: ircTarget
@@ -119,13 +119,13 @@ function notifyMatchingPlugin(responseMaker: ircWrapper.IrcResponseMaker, plugin
     pluginRegistry.pluginsByBotCommand[parsedCommand.command].onCommandCalled(parsedCommand, meta)
 }
 
-export function initializePlugins(responseMaker: ircWrapper.IrcResponseMaker): PluginRegistry {
+export function initializePlugins(responseMaker: IrcResponseMaker): PluginRegistry {
     var pluginRegistry = new PluginRegistry()
     config.plugins.forEach(p => pluginRegistry.registerPlugin(p, responseMaker, config))
     return pluginRegistry
 }
 
-export function registerEventsAndConnect(responseMaker: ircWrapper.IrcResponseMaker, pluginRegistry: PluginRegistry, commandRegex:RegExp = /^%m ([a-zA-Z0-9\-_]+) ?(.*)?/i) {
+export function registerEventsAndConnect(responseMaker: IrcResponseMaker, pluginRegistry: PluginRegistry, commandRegex:RegExp = /^%m ([a-zA-Z0-9\-_]+) ?(.*)?/i) {
     var client = responseMaker.getClient()
 
     client.addListener('message' + config.irc.channel, function (nick:string, message:string) {

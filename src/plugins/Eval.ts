@@ -1,9 +1,9 @@
-import * as Plugin from '../Plugin'
+import { Plugin, ParsedCommand }  from '../Plugin'
 import * as http from 'http'
 import * as querystring from 'querystring'
-import * as ircWrapper from '../irc/ircWrapper'
+import { IrcMessageMeta } from '../irc/ircWrapper'
 
-class Eval extends Plugin.Plugin {
+class Eval extends Plugin {
 
     private languageAliases;
 
@@ -19,11 +19,11 @@ class Eval extends Plugin.Plugin {
             "will just execute the code and output stdout. 'c' your code is inside main function, 'c-m' = outside.";
     }
 
-    onCommandCalled(command: Plugin.ParsedCommand, meta: ircWrapper.IrcMessageMeta) {
+    onCommandCalled(command: ParsedCommand, meta: IrcMessageMeta) {
         this.sendCodeToEvaluate(command, meta);
     }
 
-    private sendCodeToEvaluate(command: Plugin.ParsedCommand, meta: ircWrapper.IrcMessageMeta) {
+    private sendCodeToEvaluate(command: ParsedCommand, meta: IrcMessageMeta) {
         var language = command.command;
         if (this.languageAliases.hasOwnProperty(language)) {
             language = this.languageAliases[language];

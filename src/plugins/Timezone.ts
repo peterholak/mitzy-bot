@@ -1,7 +1,7 @@
-import * as Plugin from '../Plugin'
+import { Plugin, ParsedCommand } from '../Plugin'
 import * as NeDB from 'nedb'
 import momentTz = require('moment-timezone')
-import * as ircWrapper from '../irc/ircWrapper'
+import { IrcMessageMeta } from '../irc/ircWrapper'
 
 var aliases = {
     CST: 'Etc/GMT+6',
@@ -14,7 +14,7 @@ var aliases = {
     BST: 'Etc/GMT-1'
 };
 
-class Timezone extends Plugin.Plugin {
+class Timezone extends Plugin {
 
     private db: NeDB;
     private timeFormat = 'YYYY-MM-DD hh:mm:ss.SSSA z(Z)';
@@ -40,7 +40,7 @@ class Timezone extends Plugin.Plugin {
         this.db.ensureIndex({ fieldName: 'nick', unique: true });
     }
 
-    onCommandCalled(command: Plugin.ParsedCommand, meta: ircWrapper.IrcMessageMeta) {
+    onCommandCalled(command: ParsedCommand, meta: IrcMessageMeta) {
         if (command.splitArguments.length > 1) {
             if (command.splitArguments[0] === 'reg') {
                 return this.registerNickname(command, meta);
@@ -58,7 +58,7 @@ class Timezone extends Plugin.Plugin {
         this.outputTime(command.splitArguments[0], meta);
     }
 
-    private outputTime(zoneName: string, messageMeta: ircWrapper.IrcMessageMeta) {
+    private outputTime(zoneName: string, messageMeta: IrcMessageMeta) {
         var zone = this.getTimezone(zoneName);
         if (zone !== null) {
             this.responseMaker.respond(messageMeta, zone.format(this.timeFormat));
@@ -90,13 +90,13 @@ class Timezone extends Plugin.Plugin {
         return results;
     }
 
-    private searchTimezones(command: Plugin.ParsedCommand, messageMeta: ircWrapper.IrcMessageMeta) {
+    private searchTimezones(command: ParsedCommand, messageMeta: IrcMessageMeta) {
         var zones = this.findMatchingTimezones(command.splitArguments.slice(1).join('_'));
         this.responseMaker.respond(messageMeta,  '[' + zones.join(', ') + ']');
     }
 
 
-    private registerNickname(command: Plugin.ParsedCommand, messageMeta: ircWrapper.IrcMessageMeta) {
+    private registerNickname(command: ParsedCommand, messageMeta: IrcMessageMeta) {
         var zone = this.getTimezone(command.splitArguments[1]);
 
         if (zone) {
@@ -121,7 +121,7 @@ class Timezone extends Plugin.Plugin {
         }
     }
 
-    private outputNicknameTime(command: Plugin.ParsedCommand, messageMeta: ircWrapper.IrcMessageMeta) {
+    private outputNicknameTime(command: ParsedCommand, messageMeta: IrcMessageMeta) {
         this.db.findOne({ nick: command.splitArguments[1].toLowerCase() }, (err, data) => {
             if (err) {
                 console.log('An error occured');

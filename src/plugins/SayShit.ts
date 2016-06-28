@@ -1,6 +1,6 @@
-import * as Plugin from '../Plugin'
+import { Plugin } from '../Plugin'
 
-class SayShit extends Plugin.Plugin {
+class SayShit extends Plugin {
 
     private data;
 

@@ -1,7 +1,7 @@
-import * as Plugin from '../Plugin'
-import * as ircWrapper from '../irc/ircWrapper'
+import { Plugin, ParsedCommand } from '../Plugin'
+import { IrcMessageMeta } from '../irc/ircWrapper'
 
-class Ping extends Plugin.Plugin {
+class Ping extends Plugin {
 
     constructor(responseMaker, config) {
         super(responseMaker, config);
@@ -9,7 +9,7 @@ class Ping extends Plugin.Plugin {
         this.help = 'The bot replies. Can be useful to check for bot issues.';
     }
 
-    onCommandCalled(command: Plugin.ParsedCommand, meta: ircWrapper.IrcMessageMeta) {
+    onCommandCalled(command: ParsedCommand, meta: IrcMessageMeta) {
         this.responseMaker.respond(meta, 'Yep, I\'m here.');
     }
 }
