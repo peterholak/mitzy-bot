@@ -1,11 +1,7 @@
-///<reference path="../../typings/node/node.d.ts"/>
-///<reference path="../../typings/nedb/nedb.d.ts"/>
-///<reference path="../../typings/moment/moment.d.ts"/>
-///<reference path="../../typings/moment-timezone/moment-timezone.d.ts"/>
-import Plugin = require('../Plugin');
-import NeDB = require('nedb');
-import momentTz = require('moment-timezone');
-import ircWrapper = require('../irc/ircWrapper');
+import * as Plugin from '../Plugin'
+import * as NeDB from 'nedb'
+import momentTz = require('moment-timezone')
+import * as ircWrapper from '../irc/ircWrapper'
 
 var aliases = {
     CST: 'Etc/GMT+6',
@@ -71,7 +67,7 @@ class Timezone extends Plugin.Plugin {
         }
     }
 
-    private getTimezone(zoneName: string): moment.Moment {
+    private getTimezone(zoneName: string) {
         if (momentTz.tz.zone(zoneName) !== null) {
             return momentTz.tz(zoneName);
         }else if (aliases.hasOwnProperty(zoneName.toUpperCase()) && momentTz.tz.zone(aliases[zoneName.toUpperCase()]) !== null) {
@@ -148,4 +144,4 @@ class Timezone extends Plugin.Plugin {
     }
 }
 
-export = Timezone;
+export default Timezone;

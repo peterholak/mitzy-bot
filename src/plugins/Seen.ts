@@ -1,7 +1,6 @@
-///<reference path="../../typings/nedb/nedb.d.ts"/>
-import Plugin = require('../Plugin');
-import NeDB = require('nedb');
-import ircWrapper = require('../irc/ircWrapper');
+import * as Plugin from '../Plugin'
+import * as NeDB from 'nedb'
+import * as ircWrapper from '../irc/ircWrapper'
 var strftime = require('strftime').utc();
 
 class Seen extends Plugin.Plugin {
@@ -106,4 +105,4 @@ class Seen extends Plugin.Plugin {
     }
 }
 
-export = Seen;
+export default Seen;

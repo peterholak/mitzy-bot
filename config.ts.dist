@@ -1,6 +1,6 @@
-import ConfigInterface = require('./src/ConfigInterface');
+import ConfigInterface from './src/ConfigInterface'
 
-var config: ConfigInterface = {
+const config: ConfigInterface = {
     useDummyClient: true,
 
     http: {
@@ -79,4 +79,4 @@ var config: ConfigInterface = {
     }
 };
 
-export = config;
+export default config;

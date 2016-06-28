@@ -1,36 +1,34 @@
-///<reference path="../typings/node/node.d.ts"/>
-
-import Plugin = require('./Plugin');
-import ConfigInterface = require('./ConfigInterface');
-import ircWrapper = require('./irc/ircWrapper');
+import { Plugin } from './Plugin'
+import ConfigInterface from './ConfigInterface'
+import * as ircWrapper from './irc/ircWrapper'
 
 class PluginRegistry {
-    plugins: Plugin.Plugin[] = [];
-    pluginsByBotCommand: { [cmd: string]: Plugin.Plugin } = {};
+    plugins: Plugin[] = []
+    pluginsByBotCommand: { [cmd: string]: Plugin } = {}
 
     registerPlugin(name: string, responseMaker: ircWrapper.IrcResponseMaker, config: ConfigInterface, pluginDirectory: string = './plugins') {
-        var path = pluginDirectory + '/' + name;
-        var plugin: Plugin.Plugin = new (require(path))(responseMaker, config);
+        var path = pluginDirectory + '/' + name
+        var plugin: Plugin = new (require(path).default)(responseMaker, config)
 
-        this.plugins.push(plugin);
+        this.plugins.push(plugin)
 
         if (plugin.isCallable) {
             if (this.pluginsByBotCommand.hasOwnProperty(plugin.command)) {
-                throw new Error("Command  name conflict");
+                throw new Error("Command  name conflict")
             }
-            this.pluginsByBotCommand[plugin.command] = plugin;
+            this.pluginsByBotCommand[plugin.command] = plugin
             for (var i in plugin.commandAliases) {
                 if (this.pluginsByBotCommand.hasOwnProperty(plugin.commandAliases[i])) {
-                    throw new Error("Command  name conflict");
+                    throw new Error("Command  name conflict")
                 }
-                this.pluginsByBotCommand[plugin.commandAliases[i]] = plugin;
+                this.pluginsByBotCommand[plugin.commandAliases[i]] = plugin
             }
         }
     }
 
     getCallableCommands(): string[] {
-        return this.plugins.map( plugin => plugin.command );
+        return this.plugins.map( plugin => plugin.command )
     }
 }
 
-export = PluginRegistry;
+export default PluginRegistry

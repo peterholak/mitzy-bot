@@ -1,8 +1,7 @@
-///<reference path="../../typings/node/node.d.ts"/>
-import Plugin = require('../Plugin');
-import http = require('http');
-import querystring = require('querystring');
-import ircWrapper = require('../irc/ircWrapper');
+import * as Plugin from '../Plugin'
+import * as http from 'http'
+import * as querystring from 'querystring'
+import * as ircWrapper from '../irc/ircWrapper'
 
 class Eval extends Plugin.Plugin {
 
@@ -64,4 +63,4 @@ class Eval extends Plugin.Plugin {
     }
 }
 
-export = Eval;
+export default Eval;

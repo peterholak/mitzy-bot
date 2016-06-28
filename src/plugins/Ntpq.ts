@@ -1,36 +1,35 @@
-///<reference path="../../typings/node/node.d.ts"/>
-import child_process = require('child_process');
-import Plugin = require('../Plugin');
-import http = require('http');
-import url = require('url');
-import ircWrapper = require('../irc/ircWrapper');
+import * as child_process from 'child_process'
+import { Plugin, ParsedCommand } from '../Plugin'
+import * as http from 'http'
+import * as url from 'url'
+import { IrcMessageMeta } from '../irc/ircWrapper'
 
-class Ntpq extends Plugin.Plugin {
+class Ntpq extends Plugin {
     constructor(responseMaker, config) {
-        super(responseMaker, config);
-        this.command = 'ntpq';
-        this.help = 'Displays a link to the output of the ntpq command.';
-        this.hasHttpInterface = true;
+        super(responseMaker, config)
+        this.command = 'ntpq'
+        this.help = 'Displays a link to the output of the ntpq command.'
+        this.hasHttpInterface = true
     }
 
-    onCommandCalled(command: Plugin.ParsedCommand, meta: ircWrapper.IrcMessageMeta) {
-        var port = (this.config.http.port === 80 ? '' : (':' + this.config.http.port));
-        this.responseMaker.respond(meta, 'ntpq output can be found at http://' + this.config.http.hostname + port + '/ntpq');
+    onCommandCalled(command: ParsedCommand, meta: IrcMessageMeta) {
+        var port = (this.config.http.port === 80 ? '' : (':' + this.config.http.port))
+        this.responseMaker.respond(meta, 'ntpq output can be found at http://' + this.config.http.hostname + port + '/ntpq')
     }
 
     onHttpRequest(requestUrl: url.Url, response: http.ServerResponse) {
         response.writeHead(200, {
             'Content-Type': 'text/plain'
-        });
-        var rawData = '';
+        })
+        var rawData = ''
         try {
-            rawData = child_process.execSync('ntpq -p').stdout.toString();
+            rawData = child_process.spawnSync('ntpq -p').stdout.toString()
         }catch(e) {
-            rawData = 'error executing command';
+            rawData = 'error executing command'
         }
-        response.write(rawData);
-        response.end();
+        response.write(rawData)
+        response.end()
     }
 }
 
-export = Ntpq;
+export default Ntpq

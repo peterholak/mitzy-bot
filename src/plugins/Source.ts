@@ -1,5 +1,5 @@
-import Plugin = require('../Plugin');
-import ircWrapper = require('../irc/ircWrapper');
+import * as Plugin from '../Plugin'
+import * as ircWrapper from '../irc/ircWrapper'
 
 class Source extends Plugin.Plugin {
 
@@ -14,4 +14,4 @@ class Source extends Plugin.Plugin {
     }
 }
 
-export = Source;
+export default Source;

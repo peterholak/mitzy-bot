@@ -1,28 +1,29 @@
-///<reference path="../typings/node/node.d.ts"/>
-import http = require('http');
-import url = require('url');
-import ConfigInterface = require('./ConfigInterface');
-import ircWrapper = require('./irc/ircWrapper');
+import * as http from 'http'
+import * as url from 'url'
+import ConfigInterface from './ConfigInterface'
+import * as ircWrapper from './irc/ircWrapper'
 
 export enum MessageType {
     ChannelMessage, Pm, Notice
 }
 
 export interface ParsedCommand {
-    command: string;
-    argumentLine: string;
-    splitArguments: string[];
+    command: string
+    argumentLine: string
+    splitArguments: string[]
 }
 
 export class Plugin {
-    requiredArguments:number = 0;
-    command:string;
-    commandAliases:string[] = [];
-    help:string = 'No help for this command';
 
-    isCallable:boolean = true;
-    ignoreBots:boolean = true;
-    hasHttpInterface:boolean = false;
+    requiredArguments: number = 0
+
+    command: string
+    commandAliases: string[] = []
+    help: string = 'No help for this command'
+
+    isCallable: boolean = true
+    ignoreBots: boolean = true
+    hasHttpInterface:boolean = false
 
     constructor(protected responseMaker: ircWrapper.IrcResponseMaker, protected config: ConfigInterface) {
     }
@@ -36,3 +37,5 @@ export class Plugin {
     onHttpRequest(requestUrl: url.Url, response: http.ServerResponse) {
     }
 }
+
+export default Plugin

@@ -1,4 +1,4 @@
-import DummyIrcClient = require('./DummyIrcClient');
+import DummyIrcClient from './DummyIrcClient'
 
 /**
  * A client that will simply post some dummy messages on behalf of the user. Sort of a crutch needed
@@ -6,8 +6,8 @@ import DummyIrcClient = require('./DummyIrcClient');
  */
 class DebugIrcClient extends DummyIrcClient {
     startReadingCommandLine() {
-        setTimeout(() => this.processUserInput("%m rkt (+ 1 2)"), 500);
+        setTimeout(() => this.processUserInput("%m rkt (+ 1 2)"), 500)
     }
 }
 
-export = DebugIrcClient;
+export default DebugIrcClient

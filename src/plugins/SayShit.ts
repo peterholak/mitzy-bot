@@ -1,4 +1,4 @@
-import Plugin = require('../Plugin');
+import * as Plugin from '../Plugin'
 
 class SayShit extends Plugin.Plugin {
 
@@ -24,4 +24,4 @@ class SayShit extends Plugin.Plugin {
     }
 }
 
-export = SayShit;
+export default SayShit;

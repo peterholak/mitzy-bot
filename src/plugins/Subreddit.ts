@@ -1,9 +1,8 @@
-///<reference path="../../typings/node/node.d.ts"/>
-import Plugin = require('../Plugin');
-import http = require('http');
-import ircWrapper = require('../irc/ircWrapper');
+import { Plugin, ParsedCommand } from '../Plugin'
+import * as http from 'http'
+import { IrcMessageMeta } from '../irc/ircWrapper'
 
-class Subreddit extends Plugin.Plugin {
+class Subreddit extends Plugin {
 
     constructor(responseMaker, config) {
         super(responseMaker, config);
@@ -15,7 +14,7 @@ class Subreddit extends Plugin.Plugin {
             'Example: subreddit worldnews';
     }
 
-    onCommandCalled(command: Plugin.ParsedCommand, meta: ircWrapper.IrcMessageMeta) {
+    onCommandCalled(command: ParsedCommand, meta: IrcMessageMeta) {
         var subreddit = command.splitArguments[0];
 
         // we'll be sending this to reddit's server, so we don't want them to think
@@ -35,7 +34,7 @@ class Subreddit extends Plugin.Plugin {
         this.sendSubredditRequest(command.splitArguments[0], meta);
     }
 
-    private sendSubredditRequest(subreddit, meta: ircWrapper.IrcMessageMeta) {
+    private sendSubredditRequest(subreddit, meta: IrcMessageMeta) {
         http.get(
             {
                 hostname: 'www.reddit.com',
@@ -64,7 +63,7 @@ class Subreddit extends Plugin.Plugin {
         );
     }
 
-    private printRandomPost(subredditJson, meta: ircWrapper.IrcMessageMeta) {
+    private printRandomPost(subredditJson, meta: IrcMessageMeta) {
         if (typeof subredditJson !== 'object') {
             return;
         }
@@ -90,4 +89,4 @@ class Subreddit extends Plugin.Plugin {
     }
 }
 
-export = Subreddit;
+export default Subreddit;

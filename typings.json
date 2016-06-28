@@ -1,0 +1,9 @@
+{
+  "globalDependencies": {
+    "async": "registry:dt/async#1.4.2+20160602152629",
+    "irc": "registry:dt/irc#0.3.12+20160521154229",
+    "nedb": "registry:dt/nedb#0.0.0+20160505185910",
+    "node": "registry:dt/node#6.0.0+20160621231320",
+    "sqlite3": "registry:dt/sqlite3#2.2.3+20160316155526"
+  }
+}
