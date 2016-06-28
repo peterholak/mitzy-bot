@@ -23,7 +23,7 @@ class Ntpq extends Plugin {
         })
         var rawData = ''
         try {
-            rawData = child_process.spawnSync('ntpq -p').stdout.toString()
+            rawData = child_process.execSync('ntpq -p').toString()
         }catch(e) {
             rawData = 'error executing command'
         }
