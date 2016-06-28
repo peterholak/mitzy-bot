@@ -17,7 +17,7 @@ var aliases = {
 class Timezone extends Plugin.Plugin {
 
     private db: NeDB;
-    private timeFormat = 'YYYY-MM-DD hh:mm:ssA z(Z)';
+    private timeFormat = 'YYYY-MM-DD hh:mm:ss.SSSA z(Z)';
 
     constructor(responseMaker, config) {
         super(responseMaker, config);
