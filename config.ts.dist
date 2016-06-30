@@ -54,8 +54,7 @@ const config: ConfigInterface = {
         },
 
         Stats11: {
-            storageClass: 'SqliteStats11Storage',
-            defaultLeaderboardTimespan: 30
+            storageClass: 'SqliteStats11Storage'
         },
 
         Eval: {

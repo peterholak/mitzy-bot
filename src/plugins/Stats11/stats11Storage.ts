@@ -7,8 +7,12 @@ export interface SuccessRateStats {
     failures: number
 }
 
+export enum TimespanType {
+    Year, Month, AllTime
+}
+
 export interface UserStats {
-    previousNDays: number
+    timespan: { type: TimespanType, value?: number }
     topUsers: { [nick: string]: number }|{}
     latestUser: string
 }
@@ -19,8 +23,8 @@ export enum DayStatus {
 
 export interface Stats11Storage {
     loadSuccessRate(callback: AsyncResultCallback<SuccessRateStats>)
-    loadUserStats(previousNDays: number, callback: AsyncResultCallback<UserStats>)
-    loadLatestFailure(callback: AsyncResultCallback<string>)
+    loadUserStats(timezone: string, when: number, callback: AsyncResultCallback<UserStats>)
+    loadChainBeginning(callback: AsyncResultCallback<string>)
     loadDaySuccess(day: string, callback: (DayStatus) => void)
     loadLongestChain(callback: (number) => void)
     loadCurrentChain(callback: (number) => void)

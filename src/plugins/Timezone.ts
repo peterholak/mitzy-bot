@@ -78,13 +78,14 @@ class Timezone extends Plugin {
 
     private findMatchingTimezones(query: string): string[] {
         var results = [];
-        for (var z in momentTz.tz['_zones']) {
-            if (!momentTz.tz['_zones'].hasOwnProperty(z) || !momentTz.tz['_zones'][z].hasOwnProperty('name')) {
+        const zoneNames = momentTz.tz.names()
+        for (let z in zoneNames) {
+            if (!zoneNames.hasOwnProperty(z)) {
                 continue;
             }
 
-            if (momentTz.tz['_zones'][z].name.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
-                results.push(momentTz.tz['_zones'][z].name);
+            if (zoneNames[z].toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                results.push(zoneNames[z]);
             }
         }
         return results;

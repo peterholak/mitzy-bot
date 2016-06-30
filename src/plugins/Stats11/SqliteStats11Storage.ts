@@ -4,7 +4,8 @@ import * as async from 'async'
 import * as url from 'url'
 import * as http from 'http'
 import moment = require('moment')
-import { Stats11Storage, SuccessRateStats, UserStats, DayStatus } from './stats11Storage'
+import momentTz = require('moment-timezone')
+import { Stats11Storage, SuccessRateStats, UserStats, DayStatus, TimespanType } from './stats11Storage'
 import ConfigInterface from '../../ConfigInterface'
 
 class SqliteStats11Storage implements Stats11Storage {
@@ -53,20 +54,39 @@ class SqliteStats11Storage implements Stats11Storage {
         })
     }
 
-    loadUserStats(previousNDays: number, callback: AsyncResultCallback<UserStats>) {
-        let dateLimit = ''
+    private timespanFromNumber(when: number): { type: TimespanType, value?: number } {
+        if (when === 0) {
+            return { type: TimespanType.AllTime }
+        }
+
+        if (when <= 12) {
+            return { type: TimespanType.Month, value: Math.max(0, when-1) }
+        }
+
+        return { type: TimespanType.Year, value: when }
+    }
+
+    loadUserStats(timezone: string, when: number, callback: AsyncResultCallback<UserStats>) {
+        let query = "SELECT nick, COUNT(*) AS score FROM stats11 WHERE success = 1 GROUP BY nick ORDER BY score DESC LIMIT 5"
         let queryParameters = []
-        if (previousNDays !== 0) {
-            queryParameters = [ moment().subtract(previousNDays, 'days').format('YYYY-MM-DD') ]
-            dateLimit = 'AND day >= ?'
+
+        const timespan = this.timespanFromNumber(when)
+
+        if (timespan.type !== TimespanType.AllTime) {
+            let start, end
+            if (timespan.type === TimespanType.Month) {
+                start = momentTz.tz(timezone).month(timespan.value).startOf('month').format('YYYY-MM-DD')
+                end = momentTz.tz(timezone).month(timespan.value).endOf('month').format('YYYY-MM-DD')
+            }else{
+                start = momentTz.tz(timezone).year(timespan.value).startOf('year').format('YYYY-MM-DD')
+                end = momentTz.tz(timezone).year(timespan.value).endOf('year').format('YYYY-MM-DD')
+            }
+            query = "SELECT nick, COUNT(*) AS score FROM stats11 WHERE success = 1 AND day >= ? AND day <= ? GROUP BY nick ORDER BY score DESC LIMIT 5"
+            queryParameters = [ start, end ]
         }
 
         async.parallel({
-            top: cb => this.db.all(
-                "SELECT nick, COUNT(*) AS score FROM stats11 WHERE success = 1 " + dateLimit + " GROUP BY nick ORDER BY score DESC LIMIT 5",
-                queryParameters,
-                cb
-            ),
+            top: cb => this.db.all(query, queryParameters, cb),
             latest: cb => this.db.get("SELECT nick FROM stats11 WHERE success = 1 ORDER BY day DESC LIMIT 1", cb)
         }, function(err, results: any) {
 
@@ -74,10 +94,10 @@ class SqliteStats11Storage implements Stats11Storage {
                 return callback(err, null)
             }
 
-            var summary = {
+            const summary: UserStats = {
                 topUsers: {},
                 latestUser: (results.latest ? results.latest.nick : 'none'),
-                previousNDays: previousNDays
+                timespan: timespan
             }
 
             results.top.forEach( r => summary.topUsers[r.nick] = r.score )
@@ -86,13 +106,14 @@ class SqliteStats11Storage implements Stats11Storage {
         })
     }
 
-    loadLatestFailure(callback:AsyncResultCallback<string>) {
+    loadChainBeginning(callback:AsyncResultCallback<string>) {
         this.db.get("SELECT day FROM stats11 WHERE success = 0 ORDER BY day DESC LIMIT 1", (err, row) => {
             if (err) {
                 return callback(err, null)
             }
 
-            callback(null, row ? row.day : 'never')
+            const beginning = row ? moment(row.day).add(1, 'day').format('YYYY-MM-DD') : 'beginning'
+            callback(null, beginning)
         })
     }
 

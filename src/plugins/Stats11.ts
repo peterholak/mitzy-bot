@@ -1,6 +1,6 @@
 import { Plugin, ParsedCommand } from '../Plugin'
 import momentTz = require('moment-timezone')
-import { UserStats, SuccessRateStats, Stats11Storage, DayStatus } from './Stats11/stats11Storage'
+import { UserStats, SuccessRateStats, Stats11Storage, DayStatus, TimespanType } from './Stats11/stats11Storage'
 import * as async from 'async'
 import * as url from 'url'
 import * as http from 'http'
@@ -9,7 +9,7 @@ import { IrcMessageMeta } from '../irc/ircWrapper'
 interface Results {
     successRate: SuccessRateStats
     userStats: UserStats
-    latestFailure: string
+    chainBeginning: string
 }
 
 enum ElevenTime {
@@ -24,7 +24,6 @@ class Stats11 extends Plugin {
     private todaysWinnerDecided = false
     private todaysEntryWritten = false
     private timezone = 'America/New_York' // TODO: configurable
-    private defaultLeaderboardTimespan = 30
     private interval
 
     constructor(responseMaker, config) {
@@ -33,7 +32,6 @@ class Stats11 extends Plugin {
         this.command = 'stats11'
         this.help = '11:11 stats. Use the "raw" arugment to get a link to raw data'
         this.hasHttpInterface = true
-        this.defaultLeaderboardTimespan = this.config.pluginConfig['Stats11'].defaultLeaderboardTimespan
 
         var storageClass = './Stats11/' + this.config.pluginConfig['Stats11'].storageClass
         var storageConstructor = require(storageClass).default
@@ -54,16 +52,20 @@ class Stats11 extends Plugin {
             this.responseMaker.respond(meta, 'Raw data can be found at http://' + this.config.http.hostname + port + '/stats11')
             return
         }
-
-        let leaderboardTimespan = this.defaultLeaderboardTimespan
+ 
+        let when = momentTz.tz(this.timezone).month() + 1
         if (!isNaN(Number(command.splitArguments[0]))) {
-            leaderboardTimespan = parseInt(command.splitArguments[0])
+            when = parseInt(command.splitArguments[0])
+        }
+
+        if (command.splitArguments[0] === 'all') {
+            when = 0
         }
 
         async.parallel({
             successRate: this.storage.loadSuccessRate.bind(this.storage),
-            userStats: this.storage.loadUserStats.bind(this.storage, leaderboardTimespan),
-            latestFailure: this.storage.loadLatestFailure.bind(this.storage)
+            userStats: this.storage.loadUserStats.bind(this.storage, this.timezone, when),
+            chainBeginning: this.storage.loadChainBeginning.bind(this.storage)
         }, (err, results: any) => {
             this.outputStats(meta, err, results)
         })
@@ -146,14 +148,16 @@ class Stats11 extends Plugin {
 
         this.responseMaker.respond(
             meta,
-            'Current chain: ' + this.currentChain + ', longest chain: ' + this.longestChain +
-                '. Going strong since the day after ' + results.latestFailure + '.',
+            '\x02Chain\x02: ' + this.currentChain + ', \x02longest\x02: ' + this.longestChain +
+                ', \x02since\x02: ' + results.chainBeginning + '.',
             false
         )
 
         let topUsersPrefix = '\x02All-time\x02: '
-        if (results.userStats.previousNDays !== 0) {
-            topUsersPrefix = `\x02Past ${results.userStats.previousNDays} days\x02: `
+        if (results.userStats.timespan.type === TimespanType.Month) {
+            topUsersPrefix = `\x02${momentTz.tz(this.timezone).month(results.userStats.timespan.value).format('MMMM')}\x02: `
+        }else if (results.userStats.timespan.type === TimespanType.Year) {
+            topUsersPrefix = `\x02${momentTz.tz(this.timezone).year(results.userStats.timespan.value).format('YYYY')}\x02: `
         }
 
         let topUserStrings = Object.keys(results.userStats.topUsers).map(user =>
@@ -162,7 +166,7 @@ class Stats11 extends Plugin {
 
         this.responseMaker.respond(
             meta,
-            topUsersPrefix + topUserStrings.join(', ') + ' | \x02latest\x02 ' + this.formatNick(results.userStats.latestUser),
+            topUsersPrefix + topUserStrings.join(', ') + ' | \x02latest\x02: ' + this.formatNick(results.userStats.latestUser),
             false
         )
     }
