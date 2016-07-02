@@ -30,7 +30,7 @@ class Stats11 extends Plugin {
         super(responseMaker, config)
 
         this.command = 'stats11'
-        this.help = '11:11 stats. Use the "raw" arugment to get a link to raw data'
+        this.help = '11:11 stats. Arguments: "raw" = link to raw data, "all" = all-time stats, [1-12] = stats for a specific month this year, [year] = stats for a specific year'
         this.hasHttpInterface = true
 
         var storageClass = './Stats11/' + this.config.pluginConfig['Stats11'].storageClass
