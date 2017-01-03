@@ -1,15 +1,22 @@
 import * as readline from 'readline'
 
-class DummyIrcClient {
+export enum CommandLine {
+    ReadCommandLine,
+    NoCommandLine
+}
+
+export class DummyIrcClient {
 
     private listeners: { [event:string]: Function[] } = {}
     private commandLine: readline.ReadLine
 
-    constructor(private nick: string, private channel: string) {
-        this.commandLine = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        })
+    constructor(private nick: string, private channel: string, useCommandLine: CommandLine = CommandLine.ReadCommandLine, private clientToTrigger?: DummyIrcClient) {
+        if (useCommandLine === CommandLine.ReadCommandLine) {
+            this.commandLine = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout
+            })
+        }
 
         if (this.channel[0] !== '#') {
             this.channel = '#' + this.channel
@@ -18,6 +25,9 @@ class DummyIrcClient {
 
     say(target, text) {
         console.log("SAY(to " + target + ")> " + text)
+        if (this.clientToTrigger !== undefined) {
+            this.clientToTrigger.trigger('message' + target, [ this.nick, text ])
+        }
     }
 
     notice(target, text) {
