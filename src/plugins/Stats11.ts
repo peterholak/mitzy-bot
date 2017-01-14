@@ -266,7 +266,7 @@ class Stats11 extends Plugin {
     private formatAttempt(attempt: ElevenAttempt) {
         return (
             '\x02' + this.formatNick(attempt.nick) + '\x02' +
-            ': ' + momentTz(attempt.time).tz('America/New_York').format('HH:mm:ss.SSS') +
+            ': ' + momentTz(attempt.time).tz(this.timezone).format('HH:mm:ss.SSS') +
             ' (' + this.formatAttemptDiff(attempt) + ')'
         )
     }
