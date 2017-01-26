@@ -97,7 +97,7 @@ class Stats11 extends Plugin {
         this.storage.writeRawResultsToHttp(requestUrl, response)
     }
 
-    private loadTodaysWinnerStatus(callback: AsyncResultCallback<any>) {
+    private loadTodaysWinnerStatus(callback: AsyncResultCallback<any, any>) {
         this.storage.loadDaySuccess(this.todayYmd(), (success: DayStatus) => {
             this.todaysWinnerDecided = (success === DayStatus.Success)
             this.todaysEntryWritten = (success !== DayStatus.Undecided)
@@ -105,14 +105,14 @@ class Stats11 extends Plugin {
         })
     }
 
-    private loadLongestChain(callback: AsyncResultCallback<any>) {
+    private loadLongestChain(callback: AsyncResultCallback<any, any>) {
         this.storage.loadLongestChain((chain: number) => {
             this.longestChain = chain
             callback(null, null)
         })
     }
 
-    private updateCurrentChain(callback: AsyncResultCallback<any> = null) {
+    private updateCurrentChain(callback: AsyncResultCallback<any, any> = null) {
         this.storage.loadCurrentChain((chain: number) => {
             this.currentChain = chain
 

@@ -32,7 +32,7 @@ class SqliteStats11Storage implements Stats11Storage {
         }
     }
 
-    loadSuccessRate(callback: AsyncResultCallback<SuccessRateStats>) {
+    loadSuccessRate(callback: AsyncResultCallback<SuccessRateStats, any>) {
         this.db.all("SELECT success, COUNT(*) AS days FROM stats11 GROUP BY success", (err, rows) => {
             if (err) {
                 return callback(err, null)
@@ -66,7 +66,7 @@ class SqliteStats11Storage implements Stats11Storage {
         return { type: TimespanType.Year, value: when }
     }
 
-    loadUserStats(timezone: string, when: number, callback: AsyncResultCallback<UserStats>) {
+    loadUserStats(timezone: string, when: number, callback: AsyncResultCallback<UserStats, any>) {
         let query = "SELECT nick, COUNT(*) AS score FROM stats11 WHERE success = 1 GROUP BY nick ORDER BY score DESC LIMIT 5"
         let queryParameters = []
 
@@ -106,7 +106,7 @@ class SqliteStats11Storage implements Stats11Storage {
         })
     }
 
-    loadChainBeginning(callback:AsyncResultCallback<string>) {
+    loadChainBeginning(callback:AsyncResultCallback<string, any>) {
         this.db.get("SELECT day FROM stats11 WHERE success = 0 ORDER BY day DESC LIMIT 1", (err, row) => {
             if (err) {
                 return callback(err, null)

@@ -22,9 +22,9 @@ export enum DayStatus {
 }
 
 export interface Stats11Storage {
-    loadSuccessRate(callback: AsyncResultCallback<SuccessRateStats>)
-    loadUserStats(timezone: string, when: number, callback: AsyncResultCallback<UserStats>)
-    loadChainBeginning(callback: AsyncResultCallback<string>)
+    loadSuccessRate(callback: AsyncResultCallback<SuccessRateStats, any>)
+    loadUserStats(timezone: string, when: number, callback: AsyncResultCallback<UserStats, any>)
+    loadChainBeginning(callback: AsyncResultCallback<string, any>)
     loadDaySuccess(day: string, callback: (DayStatus) => void)
     loadLongestChain(callback: (number) => void)
     loadCurrentChain(callback: (number) => void)
