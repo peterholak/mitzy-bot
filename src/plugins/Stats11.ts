@@ -20,7 +20,10 @@ enum ElevenTime {
 interface ElevenAttempt {
     nick: string
     time: number
+    cooldown: boolean
 }
+
+const cooldownTimeMs = 10000
 
 class Stats11 extends Plugin {
 
@@ -32,6 +35,7 @@ class Stats11 extends Plugin {
     private timezone = 'America/New_York' // TODO: configurable
     private interval: NodeJS.Timer
     private attempts: ElevenAttempt[] = []
+    private cooldown: {[nick: string]: number} = {}
     private winningAttempt: ElevenAttempt|undefined
 
     constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
@@ -95,7 +99,13 @@ class Stats11 extends Plugin {
 
     onMessagePosted(message: string, nick: string) {
         const loggedAttempt = this.logAttempt(message, nick)
-        if (this.nowVs1111() === ElevenTime.Now && this.isMessage1111(message) && !this.todaysWinnerDecided && this.isWeekDay()) {
+        if (
+            loggedAttempt !== undefined &&
+            this.nowVs1111() === ElevenTime.Now &&
+            !this.todaysWinnerDecided &&
+            this.isWeekDay() &&
+            !loggedAttempt.cooldown
+        ) {
             this.todaysWinnerDecided = true
             this.writeSuccess(nick)
             this.winningAttempt = loggedAttempt
@@ -140,6 +150,10 @@ class Stats11 extends Plugin {
                 this.attempts = []
                 this.winningAttempt = undefined
             }
+        }
+
+        if (nowVs11 === ElevenTime.After) {
+            this.cooldown = {}
         }
     }
 
@@ -211,12 +225,28 @@ class Stats11 extends Plugin {
     }
 
     private logAttempt(message: string, nick: string): ElevenAttempt|undefined {
-        if (this.nowVs1111() !== ElevenTime.Now && this.isIt1110() === false) { return }
-        if (!this.isMessage1111(message)) { return }
+        if (this.nowVs1111() !== ElevenTime.Now && this.isIt1110() === false) { return undefined }
+        if (!this.isMessage1111(message)) { return undefined }
 
-        const loggedAttempt = { nick: nick, time: moment.now() }
+        const now = moment.now()
+        const onCooldown = this.isOnCooldown(nick, now)
+
+        const loggedAttempt = {
+            nick: nick,
+            time: now,
+            cooldown: onCooldown
+        }
         this.attempts.push(loggedAttempt)
+
+        if (!onCooldown) {
+            this.cooldown[nick] = now
+        }
+
         return loggedAttempt
+    }
+
+    private isOnCooldown(nick: string, now: number) {
+        return this.cooldown[nick] !== undefined && (now - this.cooldown[nick] < cooldownTimeMs)
     }
 
     private isMessage1111(text: string): boolean {
@@ -275,6 +305,7 @@ class Stats11 extends Plugin {
         if (this.winningAttempt === undefined) { return 'error' }
 
         if (attempt === this.winningAttempt) { return 'winner' }
+        if (attempt.cooldown) { return 'cooldown' }
         const secondsDiff = (attempt.time - this.winningAttempt.time) / 1000
         return (secondsDiff >= 0 ? '+' : '') + secondsDiff.toFixed(3)
     }
