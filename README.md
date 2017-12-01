@@ -9,7 +9,7 @@ How to run it (not that you would want to)
 * clone the repo
 * copy `config.ts.dist` to `config.ts` and edit as needed
 * `npm install`
-* `tsc`
+* `node_modules/.bin/tsc`
 * `node bin/src/run-mitzy`
 
 As for editing the code, everything (including debugging) should work out of the box in Visual Studio Code
