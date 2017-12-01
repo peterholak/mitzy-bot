@@ -65,8 +65,8 @@ class Stats11 extends Plugin {
     async onCommandCalled(command: ParsedCommand, meta: IrcMessageMeta) {
         if (command.splitArguments[0] === 'raw') {
             const port = (this.config.http.port === 80 ? '' : (':' + this.config.http.port))
-            const url = this.config.http.proxyAddress || (this.config.http.hostname + port)
-            this.responseMaker.respond(meta, 'Raw data can be found at http://' + url + '/stats11')
+            const url = this.config.http.proxyAddress || ('http://' + this.config.http.hostname + port)
+            this.responseMaker.respond(meta, 'Raw data can be found at ' + url + '/stats11')
             return
         }
 
