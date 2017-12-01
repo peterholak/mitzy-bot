@@ -11,9 +11,16 @@ export enum TimespanType {
     Year, Month, AllTime
 }
 
+export type Timespan = {
+    type: TimespanType.AllTime
+} | {
+    type: TimespanType.Month | TimespanType.Year
+    value: number
+}
+
 export interface UserStats {
-    timespan: { type: TimespanType, value?: number }
-    topUsers: { [nick: string]: number }|{}
+    timespan: Timespan
+    topUsers: { [nick: string]: number }
     latestUser: string
 }
 
@@ -22,15 +29,15 @@ export enum DayStatus {
 }
 
 export interface Stats11Storage {
-    loadSuccessRate(callback: AsyncResultCallback<SuccessRateStats, any>)
-    loadUserStats(timezone: string, when: number, callback: AsyncResultCallback<UserStats, any>)
-    loadChainBeginning(callback: AsyncResultCallback<string, any>)
-    loadDaySuccess(day: string, callback: (DayStatus) => void)
-    loadLongestChain(callback: (number) => void)
-    loadCurrentChain(callback: (number) => void)
-    writeRecord(day: string, success: boolean, nick: string, callback: () => void)
-    writeLongestChain(longestChain: number)
-    writeRawResultsToHttp(request: url.Url, response: http.ServerResponse)
+    loadSuccessRate(): Promise<SuccessRateStats>
+    loadUserStats(timezone: string, when: number): Promise<UserStats>
+    loadChainBeginning(): Promise<string>
+    loadDaySuccess(day: string): Promise<DayStatus>
+    loadLongestChain(): Promise<number>
+    loadCurrentChain(): Promise<number>
+    writeRecord(day: string, success: boolean, nick: string|null): Promise<void>
+    writeLongestChain(longestChain: number): Promise<void>
+    writeRawResultsToHttp(request: url.Url, response: http.ServerResponse): void
 }
 
 export default Stats11Storage

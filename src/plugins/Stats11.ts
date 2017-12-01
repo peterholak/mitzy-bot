@@ -2,10 +2,10 @@ import { Plugin, ParsedCommand } from '../Plugin'
 import moment = require('moment')
 import momentTz = require('moment-timezone')
 import { UserStats, SuccessRateStats, Stats11Storage, DayStatus, TimespanType } from './Stats11/stats11Storage'
-import * as async from 'async'
 import * as url from 'url'
 import * as http from 'http'
-import { IrcMessageMeta } from '../irc/ircWrapper'
+import { IrcMessageMeta, IrcResponseMaker } from '../irc/ircWrapper'
+import { ConfigInterface } from '../ConfigInterface';
 
 interface Results {
     successRate: SuccessRateStats
@@ -30,34 +30,39 @@ class Stats11 extends Plugin {
     private todaysWinnerDecided = false
     private todaysEntryWritten = false
     private timezone = 'America/New_York' // TODO: configurable
-    private interval
+    private interval: NodeJS.Timer
     private attempts: ElevenAttempt[] = []
-    private winningAttempt: ElevenAttempt|null = null
+    private winningAttempt: ElevenAttempt|undefined
 
-    constructor(responseMaker, config) {
+    constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
         super(responseMaker, config)
 
         this.command = 'stats11'
         this.help = '11:11 stats. Arguments: "raw" = link to raw data, "all" = all-time stats, [1-12] = stats for a specific month this year, [year] = stats for a specific year, "board" = today\'s times'
         this.hasHttpInterface = true
 
-        var storageClass = './Stats11/' + this.config.pluginConfig['Stats11'].storageClass
-        var storageConstructor = require(storageClass).default
+        const storageClass = './Stats11/' + this.config.pluginConfig['Stats11'].storageClass
+        const storageConstructor = require(storageClass).default
         this.storage = new storageConstructor(this.config)
 
-        async.series([
-            this.loadTodaysWinnerStatus.bind(this),
-            this.loadLongestChain.bind(this),
-            this.updateCurrentChain.bind(this),
-        ], () => {
-            this.interval = setInterval(this.everyMinute.bind(this), 60000)
-        })
+        Promise.all([
+            this.loadTodaysWinnerStatus(),
+            this.loadLongestChain(),
+            this.updateCurrentChain()
+        ])
+        .then(() =>
+            this.interval = setInterval(
+                () => this.everyMinute(),
+                60000
+            )
+        )
     }
 
-    onCommandCalled(command: ParsedCommand, meta: IrcMessageMeta) {
+    async onCommandCalled(command: ParsedCommand, meta: IrcMessageMeta) {
         if (command.splitArguments[0] === 'raw') {
-            var port = (this.config.http.port === 80 ? '' : (':' + this.config.http.port))
-            this.responseMaker.respond(meta, 'Raw data can be found at http://' + this.config.http.hostname + port + '/stats11')
+            const port = (this.config.http.port === 80 ? '' : (':' + this.config.http.port))
+            const url = this.config.http.proxyAddress || (this.config.http.hostname + port)
+            this.responseMaker.respond(meta, 'Raw data can be found at http://' + url + '/stats11')
             return
         }
 
@@ -75,13 +80,17 @@ class Stats11 extends Plugin {
             when = 0
         }
 
-        async.parallel({
-            successRate: this.storage.loadSuccessRate.bind(this.storage),
-            userStats: this.storage.loadUserStats.bind(this.storage, this.timezone, when),
-            chainBeginning: this.storage.loadChainBeginning.bind(this.storage)
-        }, (err, results: any) => {
-            this.outputStats(meta, err, results)
-        })
+        const successRate = this.storage.loadSuccessRate()
+        const userStats = this.storage.loadUserStats(this.timezone, when)
+        const chainBeginning = this.storage.loadChainBeginning()
+
+        const results = {
+            successRate: await successRate,
+            userStats: await userStats,
+            chainBeginning: await chainBeginning
+        }
+
+        this.outputStats(meta, results)
     }
 
     onMessagePosted(message: string, nick: string) {
@@ -97,38 +106,27 @@ class Stats11 extends Plugin {
         this.storage.writeRawResultsToHttp(requestUrl, response)
     }
 
-    private loadTodaysWinnerStatus(callback: AsyncResultCallback<any, any>) {
-        this.storage.loadDaySuccess(this.todayYmd(), (success: DayStatus) => {
-            this.todaysWinnerDecided = (success === DayStatus.Success)
-            this.todaysEntryWritten = (success !== DayStatus.Undecided)
-            callback(null, null)
-        })
+    private async loadTodaysWinnerStatus() {
+        const success = await this.storage.loadDaySuccess(this.todayYmd())
+        this.todaysWinnerDecided = (success === DayStatus.Success)
+        this.todaysEntryWritten = (success !== DayStatus.Undecided)
     }
 
-    private loadLongestChain(callback: AsyncResultCallback<any, any>) {
-        this.storage.loadLongestChain((chain: number) => {
-            this.longestChain = chain
-            callback(null, null)
-        })
+    private async loadLongestChain() {
+        this.longestChain = await this.storage.loadLongestChain()
     }
 
-    private updateCurrentChain(callback: AsyncResultCallback<any, any> = null) {
-        this.storage.loadCurrentChain((chain: number) => {
-            this.currentChain = chain
+    private async updateCurrentChain() {
+        this.currentChain = await this.storage.loadCurrentChain()
 
-            if (this.currentChain > this.longestChain) {
-                this.longestChain = this.currentChain
-                this.storage.writeLongestChain(this.longestChain)
-            }
-
-            if (callback !== null) {
-                callback(null, null)
-            }
-        })
+        if (this.currentChain > this.longestChain) {
+            this.longestChain = this.currentChain
+            await this.storage.writeLongestChain(this.longestChain)
+        }
     }
 
     private everyMinute() {
-        var nowVs11 = this.nowVs1111()
+        const nowVs11 = this.nowVs1111()
 
         if (nowVs11 === ElevenTime.After && !this.todaysWinnerDecided && !this.todaysEntryWritten && this.isWeekDay()) {
             this.writeFailure()
@@ -140,24 +138,26 @@ class Stats11 extends Plugin {
 
             if (!this.isIt1110()) {
                 this.attempts = []
-                this.winningAttempt = null
+                this.winningAttempt = undefined
             }
         }
     }
 
-    private writeSuccess(nick: string) {
+    private async writeSuccess(nick: string) {
         this.todaysEntryWritten = true
-        this.storage.writeRecord(this.todayYmd(), true, nick, this.updateCurrentChain.bind(this))
+        await this.storage.writeRecord(this.todayYmd(), true, nick)
+        await this.updateCurrentChain()
     }
 
-    private writeFailure() {
+    private async writeFailure() {
         this.todaysEntryWritten = true
-        this.storage.writeRecord(this.todayYmd(), false, null, this.updateCurrentChain.bind(this))
+        await this.storage.writeRecord(this.todayYmd(), false, null)
+        await this.updateCurrentChain()
     }
 
-    private outputStats(meta: IrcMessageMeta, err, results: Results) {
-        var total = results.successRate.successes + results.successRate.failures
-        var percent = (total > 0 ? results.successRate.successes / total : 0) * 100
+    private outputStats(meta: IrcMessageMeta, results: Results) {
+        const total = results.successRate.successes + results.successRate.failures
+        const percent = (total > 0 ? results.successRate.successes / total : 0) * 100
 
         this.responseMaker.respond(
             meta,
@@ -180,7 +180,7 @@ class Stats11 extends Plugin {
             topUsersPrefix = `\x02${momentTz.tz(this.timezone).year(results.userStats.timespan.value).format('YYYY')}\x02: `
         }
 
-        let topUserStrings = Object.keys(results.userStats.topUsers).map(user =>
+        const topUserStrings = Object.keys(results.userStats.topUsers).map(user =>
             `${this.formatNick(user)} (${results.userStats.topUsers[user]})`
         )
 
@@ -192,7 +192,7 @@ class Stats11 extends Plugin {
     }
 
     private nowVs1111(): ElevenTime {
-        var time = momentTz.tz(this.timezone)
+        const time = momentTz.tz(this.timezone)
 
         if (time.hour() < 11 || (time.hour() === 11 && time.minute() < 11)) {
             return ElevenTime.Before
@@ -206,11 +206,11 @@ class Stats11 extends Plugin {
     }
 
     private isIt1110() {
-        var time = momentTz.tz(this.timezone)
+        const time = momentTz.tz(this.timezone)
         return time.hour() === 11 && time.minute() === 10
     }
 
-    private logAttempt(message: string, nick: string): ElevenAttempt {
+    private logAttempt(message: string, nick: string): ElevenAttempt|undefined {
         if (this.nowVs1111() !== ElevenTime.Now && this.isIt1110() === false) { return }
         if (!this.isMessage1111(message)) { return }
 
@@ -224,12 +224,12 @@ class Stats11 extends Plugin {
     }
 
     /** formats nick to prevent highlighting the user */
-    private formatNick(nick) {
+    private formatNick(nick: string) {
         return nick[0] + "\u200b" + nick.substring(1)
     }
 
     private todayYmd() {
-        var zone = momentTz().tz(this.timezone)
+        const zone = momentTz().tz(this.timezone)
         return zone.format('YYYY-MM-DD')
     }
 
@@ -245,9 +245,9 @@ class Stats11 extends Plugin {
         return this.todaysWinnerDecided ? 'success' : 'failure'
     }
 
-    private isWeekDay(date: Date = null) {
+    private isWeekDay(date: Date|null = null) {
         if (date === null) {
-            var zone = momentTz().tz(this.timezone)
+            const zone = momentTz().tz(this.timezone)
             return (zone.day() != 0 && zone.day() != 6)
         }
         return (date.getDay() != 0 && date.getDay() != 6)
@@ -257,7 +257,7 @@ class Stats11 extends Plugin {
         if (!this.todaysWinnerDecided) {
             return 'Today\'s winner has not been decided yet.'
         }
-        if (this.winningAttempt === null) {
+        if (this.winningAttempt === undefined) {
             return 'Bot was restarted after today\'s winner was written and the board data was lost.'
         }
         return 'Board: ' + this.attempts.map(this.formatAttempt.bind(this)).join(', ')
@@ -272,7 +272,7 @@ class Stats11 extends Plugin {
     }
 
     private formatAttemptDiff(attempt: ElevenAttempt) {
-        if (this.winningAttempt === null) { return 'error' }
+        if (this.winningAttempt === undefined) { return 'error' }
 
         if (attempt === this.winningAttempt) { return 'winner' }
         const secondsDiff = (attempt.time - this.winningAttempt.time) / 1000

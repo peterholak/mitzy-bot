@@ -84,7 +84,7 @@ class Timezone extends Plugin {
     }
 
     private findMatchingTimezones(query: string): string[] {
-        var results = [];
+        var results: string[] = [];
         const zoneNames = momentTz.tz.names()
         for (let z in zoneNames) {
             if (!zoneNames.hasOwnProperty(z)) {

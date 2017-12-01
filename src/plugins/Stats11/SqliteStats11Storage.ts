@@ -5,7 +5,7 @@ import * as url from 'url'
 import * as http from 'http'
 import moment = require('moment')
 import momentTz = require('moment-timezone')
-import { Stats11Storage, SuccessRateStats, UserStats, DayStatus, TimespanType } from './stats11Storage'
+import { Stats11Storage, SuccessRateStats, UserStats, DayStatus, TimespanType, Timespan } from './stats11Storage'
 import ConfigInterface from '../../ConfigInterface'
 
 class SqliteStats11Storage implements Stats11Storage {
@@ -32,29 +32,31 @@ class SqliteStats11Storage implements Stats11Storage {
         }
     }
 
-    loadSuccessRate(callback: AsyncResultCallback<SuccessRateStats, any>) {
-        this.db.all("SELECT success, COUNT(*) AS days FROM stats11 GROUP BY success", (err, rows) => {
-            if (err) {
-                return callback(err, null)
-            }
+    loadSuccessRate(): Promise<SuccessRateStats> {
+        return new Promise<SuccessRateStats>((resolve, reject) => {
+            this.db.all("SELECT success, COUNT(*) AS days FROM stats11 GROUP BY success", (err, rows) => {
+                if (err) {
+                    return reject(err)
+                }
 
-            var stats = { successes: 0, failures: 0 }
+                var stats = { successes: 0, failures: 0 }
 
-            var successesRow = rows.filter( r => r.success === 1 )
-            if (successesRow.length) {
-                stats.successes = successesRow[0].days
-            }
+                var successesRow = rows.filter( r => r.success === 1 )
+                if (successesRow.length) {
+                    stats.successes = successesRow[0].days
+                }
 
-            var failuresRow = rows.filter( r => r.success === 0 )
-            if (failuresRow.length) {
-                stats.failures = failuresRow[0].days
-            }
+                var failuresRow = rows.filter( r => r.success === 0 )
+                if (failuresRow.length) {
+                    stats.failures = failuresRow[0].days
+                }
 
-            callback(err, stats)
+                resolve(stats)
+            })
         })
     }
 
-    private timespanFromNumber(when: number): { type: TimespanType, value?: number } {
+    private timespanFromNumber(when: number): Timespan {
         if (when === 0) {
             return { type: TimespanType.AllTime }
         }
@@ -66,110 +68,126 @@ class SqliteStats11Storage implements Stats11Storage {
         return { type: TimespanType.Year, value: when }
     }
 
-    loadUserStats(timezone: string, when: number, callback: AsyncResultCallback<UserStats, any>) {
-        let query = "SELECT nick, COUNT(*) AS score FROM stats11 WHERE success = 1 GROUP BY nick ORDER BY score DESC LIMIT 5"
-        let queryParameters = []
+    loadUserStats(timezone: string, when: number): Promise<UserStats> {
+        return new Promise((resolve, reject) => {
+            let query = "SELECT nick, COUNT(*) AS score FROM stats11 WHERE success = 1 GROUP BY nick ORDER BY score DESC LIMIT 5"
+            let queryParameters: string[] = []
 
-        const timespan = this.timespanFromNumber(when)
+            const timespan = this.timespanFromNumber(when)
 
-        if (timespan.type !== TimespanType.AllTime) {
-            let start, end
-            if (timespan.type === TimespanType.Month) {
-                start = momentTz.tz(timezone).month(timespan.value).startOf('month').format('YYYY-MM-DD')
-                end = momentTz.tz(timezone).month(timespan.value).endOf('month').format('YYYY-MM-DD')
-            }else{
-                start = momentTz.tz(timezone).year(timespan.value).startOf('year').format('YYYY-MM-DD')
-                end = momentTz.tz(timezone).year(timespan.value).endOf('year').format('YYYY-MM-DD')
-            }
-            query = "SELECT nick, COUNT(*) AS score FROM stats11 WHERE success = 1 AND day >= ? AND day <= ? GROUP BY nick ORDER BY score DESC LIMIT 5"
-            queryParameters = [ start, end ]
-        }
-
-        async.parallel({
-            top: cb => this.db.all(query, queryParameters, cb),
-            latest: cb => this.db.get("SELECT nick FROM stats11 WHERE success = 1 ORDER BY day DESC LIMIT 1", cb)
-        }, function(err, results: any) {
-
-            if (err) {
-                return callback(err, null)
-            }
-
-            const summary: UserStats = {
-                topUsers: {},
-                latestUser: (results.latest ? results.latest.nick : 'none'),
-                timespan: timespan
-            }
-
-            results.top.forEach( r => summary.topUsers[r.nick] = r.score )
-
-            callback(err, summary)
-        })
-    }
-
-    loadChainBeginning(callback:AsyncResultCallback<string, any>) {
-        this.db.get("SELECT day FROM stats11 WHERE success = 0 ORDER BY day DESC LIMIT 1", (err, row) => {
-            if (err) {
-                return callback(err, null)
-            }
-
-            const beginning = row ? moment(row.day).add(1, 'day').format('YYYY-MM-DD') : 'beginning'
-            callback(null, beginning)
-        })
-    }
-
-    loadDaySuccess(day: string, callback: (status: DayStatus) => void) {
-        this.db.get("SELECT success FROM stats11 WHERE day = ?", [ day ], (err, row) => {
-            // good enough, see comment in loadLongestChains
-            if (err) { throw err }
-
-            if (row === undefined) {
-                return callback(DayStatus.Undecided)
-            }
-            return callback(row.success === 1 ? DayStatus.Success : DayStatus.Failure)
-        })
-    }
-
-    loadLongestChain(callback: (number) => void) {
-        this.db.get("SELECT longest_chain FROM stats11_chain", (err, row) => {
-            if (err) {
-                // good enough for now, there is no real way to recover from this error and this method will
-                // only run shortly after the bot is started, so any errors will immediately be visible in the console
-                throw err
-            }
-            callback(row.longest_chain)
-        })
-    }
-
-    loadCurrentChain(callback: (number) => void) {
-        // this data is small enough to be loaded in one piece
-        this.db.all("SELECT success FROM stats11 ORDER BY day DESC", (err, rows) => {
-            if (err) { throw err }
-
-            var chain = 0
-            rows.every((row) => {
-                if (row.success === 1) {
-                    chain++
+            if (timespan.type !== TimespanType.AllTime) {
+                let start, end
+                if (timespan.type === TimespanType.Month) {
+                    start = momentTz.tz(timezone).month(timespan.value).startOf('month').format('YYYY-MM-DD')
+                    end = momentTz.tz(timezone).month(timespan.value).endOf('month').format('YYYY-MM-DD')
+                }else{
+                    start = momentTz.tz(timezone).year(timespan.value).startOf('year').format('YYYY-MM-DD')
+                    end = momentTz.tz(timezone).year(timespan.value).endOf('year').format('YYYY-MM-DD')
                 }
-                return row.success === 1
-            })
+                query = "SELECT nick, COUNT(*) AS score FROM stats11 WHERE success = 1 AND day >= ? AND day <= ? GROUP BY nick ORDER BY score DESC LIMIT 5"
+                queryParameters = [ start, end ]
+            }
 
-            callback(chain)
+            async.parallel({
+                top: cb => this.db.all(query, queryParameters, cb),
+                latest: cb => this.db.get("SELECT nick FROM stats11 WHERE success = 1 ORDER BY day DESC LIMIT 1", cb)
+            }, function(err, resultsRaw) {
+
+                // TODO: stop using that ancient async library, use something to promisify sqlite3 instead
+                const results = resultsRaw as {
+                    latest: { nick: string }
+                    top: { nick: string, score: number }[]
+                }
+
+                if (err) {
+                    return reject(err)
+                }
+
+                const summary: UserStats = {
+                    topUsers: {},
+                    latestUser: (results.latest ? results.latest.nick : 'none'),
+                    timespan: timespan
+                }
+
+                results.top.forEach( r => summary.topUsers[r.nick] = r.score )
+
+                resolve(summary)
+            })
         })
     }
 
-    writeLongestChain(longestChain: number) {
-        this.db.run("UPDATE stats11_chain SET longest_chain = ?", [ longestChain ])
+    loadChainBeginning(): Promise<string> {
+        return new Promise((resolve, reject) => {
+            this.db.get("SELECT day FROM stats11 WHERE success = 0 ORDER BY day DESC LIMIT 1", (err, row) => {
+                if (err) { return reject(err) }
+
+                const beginning = row ? moment(row.day).add(1, 'day').format('YYYY-MM-DD') : 'beginning'
+                resolve(beginning)
+            })
+        })
     }
 
-    writeRecord(day: string, success: boolean, nick: string, callback: () => void) {
-        this.db.run(
-            "INSERT OR IGNORE INTO stats11(day, success, nick) VALUES(?, ?, ?)",
-            [ day, success ? 1 : 0, nick ],
-            (err) => {
-                if (err) { throw err }
-                callback()
-            }
-        )
+    loadDaySuccess(day: string): Promise<DayStatus> {
+        return new Promise((resolve, reject) => {
+            this.db.get("SELECT success FROM stats11 WHERE day = ?", [ day ], (err, row) => {
+                if (err) { return reject(err) }
+
+                if (row === undefined) {
+                    return resolve(DayStatus.Undecided)
+                }
+                return resolve(row.success === 1 ? DayStatus.Success : DayStatus.Failure)
+            })
+        })
+    }
+
+    loadLongestChain(): Promise<number> {
+        return new Promise((resolve, reject) => {
+            this.db.get("SELECT longest_chain FROM stats11_chain", (err, row) => {
+                if (err) { return reject(err) }
+                resolve(row.longest_chain)
+            })
+        })
+    }
+
+    loadCurrentChain(): Promise<number> {
+        return new Promise((resolve, reject) => {
+            // this data is small enough to be loaded in one piece
+            this.db.all("SELECT success FROM stats11 ORDER BY day DESC", (err, rows) => {
+                if (err) { return reject(err) }
+
+                var chain = 0
+                rows.every(row => {
+                    if (row.success === 1) {
+                        chain++
+                    }
+                    return row.success === 1
+                })
+
+                resolve(chain)
+            })
+        })
+    }
+
+    writeLongestChain(longestChain: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.db.run("UPDATE stats11_chain SET longest_chain = ?", [ longestChain ], err => {
+                if (err) { return reject(err) }
+                resolve()
+            })
+        })
+    }
+
+    writeRecord(day: string, success: boolean, nick: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.db.run(
+                "INSERT OR IGNORE INTO stats11(day, success, nick) VALUES(?, ?, ?)",
+                [ day, success ? 1 : 0, nick ],
+                (err) => {
+                    if (err) { return reject(err) }
+                    resolve()
+                }
+            )
+        })
     }
 
     writeRawResultsToHttp(requestUrl: url.Url, response: http.ServerResponse) {
