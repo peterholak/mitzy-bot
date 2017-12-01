@@ -25,7 +25,7 @@ export class DummyIrcClient implements ClientInterface {
     }
 
     say(target: string, text: string) {
-        console.log("SAY(to " + target + ")> " + text)
+        console.log("SAY(to " + target + " as " + this.nick + ")> " + text)
         if (this.clientToTrigger !== undefined) {
             this.clientToTrigger.trigger('message' + target, [ this.nick, text ])
         }
