@@ -1,4 +1,5 @@
 import { MessageType } from '../Plugin'
+import ClientInterface from './ClientInterface'
 
 export interface IrcMessageMeta {
     messageType: MessageType
@@ -7,7 +8,7 @@ export interface IrcMessageMeta {
 }
 
 export class IrcResponseMaker {
-    constructor(private client) {
+    constructor(private client: ClientInterface) {
 
     }
 
@@ -27,7 +28,7 @@ export class IrcResponseMaker {
         return this.client
     }
 
-    replaceClient(newClient) {
+    replaceClient(newClient: ClientInterface) {
         this.client = newClient
     }
 }

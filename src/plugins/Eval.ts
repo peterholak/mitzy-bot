@@ -1,13 +1,14 @@
 import { Plugin, ParsedCommand }  from '../Plugin'
 import * as http from 'http'
 import * as querystring from 'querystring'
-import { IrcMessageMeta } from '../irc/ircWrapper'
+import { IrcMessageMeta, IrcResponseMaker } from '../irc/ircWrapper'
+import { ConfigInterface } from '../ConfigInterface'
 
 class Eval extends Plugin {
 
-    private languageAliases;
+    private languageAliases: {[alias: string]: string}
 
-    constructor(responseMaker, config) {
+    constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
         super(responseMaker, config);
         this.command = 'eval';
         this.commandAliases = this.config.pluginConfig['Eval'].commandAliases;
@@ -43,20 +44,20 @@ class Eval extends Plugin {
                     'Content-Length': postData.length
                 }
             },
-            function(res) {
+            (res: http.IncomingMessage) => {
                 var partialData = '';
-                res.on('data', function(data) {
+                res.on('data', (data: string|Buffer) => {
                     partialData += data
-                }.bind(this));
+                });
 
-                res.on('end', function() {
+                res.on('end', () => {
                     var resultData = partialData.replace(/[\n\r]/g, ' ');
                     if (resultData.length > 300) {
                         resultData = resultData.substring(0, 300) + '...';
                     }
                     this.responseMaker.respond(meta, resultData);
-                }.bind(this));
-            }.bind(this)
+                });
+            }
         );
         req.write(postData);
         req.end();

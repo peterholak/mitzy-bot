@@ -1,11 +1,12 @@
 import * as readline from 'readline'
+import ClientInterface from './ClientInterface'
 
 export enum CommandLine {
     ReadCommandLine,
     NoCommandLine
 }
 
-export class DummyIrcClient {
+export class DummyIrcClient implements ClientInterface {
 
     private listeners: { [event:string]: Function[] } = {}
     private commandLine: readline.ReadLine
@@ -23,14 +24,14 @@ export class DummyIrcClient {
         }
     }
 
-    say(target, text) {
+    say(target: string, text: string) {
         console.log("SAY(to " + target + ")> " + text)
         if (this.clientToTrigger !== undefined) {
             this.clientToTrigger.trigger('message' + target, [ this.nick, text ])
         }
     }
 
-    notice(target, text) {
+    notice(target: string, text: string) {
         console.log("NOTICE(to " + target + ")> " + text)
     }
 
@@ -39,10 +40,12 @@ export class DummyIrcClient {
             this.listeners[event] = []
         }
         this.listeners[event].push(callback)
+        return this
     }
 
-    on(...args) {
+    on(event: string, listener: Function) {
         this.addListener.apply(this, arguments)
+        return this
     }
 
     trigger(event:string, args: any[]) {
@@ -62,7 +65,7 @@ export class DummyIrcClient {
         this.commandLine.on('line', this.onCommandLine.bind(this))
     }
 
-    private onCommandLine(line) {
+    private onCommandLine(line: string) {
         if (line.trim() === 'quit') {
             this.commandLine.close()
             process.exit()
@@ -72,7 +75,7 @@ export class DummyIrcClient {
         this.commandLine.prompt()
     }
 
-    protected processUserInput(line) {
+    protected processUserInput(line: string) {
         if (line.split(' ')[0] === 'pm') {
             this.trigger('pm', [this.nick, line.substr(' pm'.length)])
         } else if (line.split(' ')[0] === 'notice') {

@@ -1,9 +1,10 @@
 import { Plugin, ParsedCommand } from '../Plugin'
 import * as NeDB from 'nedb'
 import momentTz = require('moment-timezone')
-import { IrcMessageMeta } from '../irc/ircWrapper'
+import { IrcMessageMeta, IrcResponseMaker } from '../irc/ircWrapper'
+import { ConfigInterface } from '../ConfigInterface'
 
-var aliases = {
+var aliases: {[alias: string]: string} = {
     CST: 'Etc/GMT+6',
     CDT: 'Etc/GMT+5',
     PST: 'Etc/GMT+8',
@@ -12,14 +13,20 @@ var aliases = {
     MST: 'Etc/GMT+7',
     MDT: 'Etc/GMT+6',
     BST: 'Etc/GMT-1'
-};
+}
+
+interface NicknameTime {
+    nick: string
+    zone: string
+    realNick: string
+}
 
 class Timezone extends Plugin {
 
     private db: NeDB;
     private timeFormat = 'YYYY-MM-DD hh:mm:ss.SSSA z(Z)';
 
-    constructor(responseMaker, config) {
+    constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
         super(responseMaker, config);
 
         this.command = 'tz';
@@ -123,7 +130,7 @@ class Timezone extends Plugin {
     }
 
     private outputNicknameTime(command: ParsedCommand, messageMeta: IrcMessageMeta) {
-        this.db.findOne({ nick: command.splitArguments[1].toLowerCase() }, (err, data) => {
+        this.db.findOne({ nick: command.splitArguments[1].toLowerCase() }, (err, data: NicknameTime) => {
             if (err) {
                 console.log('An error occured');
                 return;
@@ -134,13 +141,13 @@ class Timezone extends Plugin {
                 return;
             }
 
-            var zone = this.getTimezone(data['zone']);
+            var zone = this.getTimezone(data.zone);
             if (zone === null) {
                 this.responseMaker.respond(messageMeta, 'Unable to get current time');
                 return;
             }
 
-            this.responseMaker.respond(messageMeta, 'It\'s ' + zone.format(this.timeFormat) + ' where ' + data['realNick'] + ' is located.');
+            this.responseMaker.respond(messageMeta, `It's ${zone.format(this.timeFormat)} where ${data.realNick} is located.`);
         });
     }
 }

@@ -3,11 +3,11 @@ declare module 'moment-timezone' {
     import moment = require('moment')
 
     interface Zone {
-        name
-        abbrs
-        untils
-        offsets
-        population
+        name: any
+        abbrs: any
+        untils: any
+        offsets: any
+        population: any
     }
 
     interface Tz {
@@ -22,7 +22,7 @@ declare module 'moment-timezone' {
     }
 
     interface MomentTz {
-        (date?): moment.Moment & Tz
+        (date?: any): moment.Moment & Tz
         tz: TzStatic
     }
 

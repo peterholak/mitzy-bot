@@ -4,7 +4,7 @@ import moment = require('moment')
 // TODO: proper tests for the whole project
 export function sendSomeElevens(mitzyClient: DummyIrcClient, count: number = 3) {
 
-    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
     const sendThem = () => {
         for (let i = 0; i<count; i++) {
             const name = Math.random().toString(36).substring(7);
@@ -13,7 +13,7 @@ export function sendSomeElevens(mitzyClient: DummyIrcClient, count: number = 3) 
         }
     }
     
-    Promise.resolve()
+    return Promise.resolve()
         .then(() => {
             moment.now = () => +new Date(2017, 0, 3, 17, 09)
             sendThem()

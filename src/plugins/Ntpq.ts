@@ -2,10 +2,11 @@ import * as child_process from 'child_process'
 import { Plugin, ParsedCommand } from '../Plugin'
 import * as http from 'http'
 import * as url from 'url'
-import { IrcMessageMeta } from '../irc/ircWrapper'
+import { IrcMessageMeta, IrcResponseMaker } from '../irc/ircWrapper'
+import { ConfigInterface } from '../ConfigInterface'
 
 class Ntpq extends Plugin {
-    constructor(responseMaker, config) {
+    constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
         super(responseMaker, config)
         this.command = 'ntpq'
         this.help = 'Displays a link to the output of the ntpq command.'

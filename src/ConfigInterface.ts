@@ -1,6 +1,7 @@
 export interface HttpConfig {
     hostname: string
     port: number
+    proxyAddress?: string
 }
 
 export interface IrcConfig {

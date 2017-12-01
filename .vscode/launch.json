@@ -8,9 +8,9 @@
             "program": "${workspaceRoot}/bin/src/run-mitzy.js",
             "stopOnEntry": false,
             "cwd": "${workspaceRoot}",
-            "externalConsole": true,
+            "console": "externalTerminal",
             "sourceMaps": true,
-            "outDir": "${workspaceRoot}/bin"
+            "outFiles": [ "${workspaceRoot}/bin/**/*.js" ]
         }
     ]
 }

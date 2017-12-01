@@ -1,10 +1,11 @@
 import { Plugin, ParsedCommand } from '../Plugin'
 import * as http from 'http'
-import { IrcMessageMeta } from '../irc/ircWrapper'
+import { IrcMessageMeta, IrcResponseMaker } from '../irc/ircWrapper'
+import { ConfigInterface } from '../ConfigInterface';
 
 class Subreddit extends Plugin {
 
-    constructor(responseMaker, config) {
+    constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
         super(responseMaker, config);
         this.command = 'subreddit';
         this.requiredArguments = 1;
@@ -34,7 +35,7 @@ class Subreddit extends Plugin {
         this.sendSubredditRequest(command.splitArguments[0], meta);
     }
 
-    private sendSubredditRequest(subreddit, meta: IrcMessageMeta) {
+    private sendSubredditRequest(subreddit: string, meta: IrcMessageMeta) {
         http.get(
             {
                 hostname: 'www.reddit.com',
@@ -63,7 +64,7 @@ class Subreddit extends Plugin {
         );
     }
 
-    private printRandomPost(subredditJson, meta: IrcMessageMeta) {
+    private printRandomPost(subredditJson: any, meta: IrcMessageMeta) {
         if (typeof subredditJson !== 'object') {
             return;
         }

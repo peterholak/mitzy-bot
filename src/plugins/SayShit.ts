@@ -1,27 +1,35 @@
 import { Plugin } from '../Plugin'
+import { IrcResponseMaker } from '../irc/ircWrapper'
+import { ConfigInterface } from '../ConfigInterface'
+
+interface ShitEntry {
+    regex: RegExp
+    probability: number
+    shit: string[]
+}
 
 class SayShit extends Plugin {
 
-    private data;
+    private data: ShitEntry[]
 
-    constructor(responseMaker, config) {
-        super(responseMaker, config);
-        this.isCallable = false;
-        this.data = config.pluginConfig['SayShit'].data;
+    constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
+        super(responseMaker, config)
+        this.isCallable = false
+        this.data = config.pluginConfig['SayShit'].data
     }
 
     onMessagePosted(message: string, nick: string) {
-        this.data.every( shit => this.checkShit(message, shit) );
+        this.data.every( shit => this.checkShit(message, shit) )
     }
 
-    private checkShit(message, shit): boolean {
+    private checkShit(message: string, shit: ShitEntry): boolean {
         if (message.match(shit.regex) && Math.random() < shit.probability) {
-            var shitIndex = Math.floor(Math.random() * shit.shit.length);
-            this.responseMaker.getClient().say(this.config.irc.channel, shit.shit[shitIndex]);
-            return false;
+            var shitIndex = Math.floor(Math.random() * shit.shit.length)
+            this.responseMaker.getClient().say(this.config.irc.channel, shit.shit[shitIndex])
+            return false
         }
-        return true;
+        return true
     }
 }
 
-export default SayShit;
+export default SayShit

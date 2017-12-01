@@ -3,7 +3,8 @@
         "module": "commonjs",
         "target": "es2015",
         "sourceMap": true,
-        "outDir": "bin"
+        "outDir": "bin",
+        "strict": true
     },
     "exclude": [
         "node_modules"

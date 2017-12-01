@@ -1,13 +1,20 @@
 import { Plugin, ParsedCommand } from '../Plugin'
 import * as NeDB from 'nedb'
-import { IrcMessageMeta } from '../irc/ircWrapper'
-var strftime = require('strftime').utc();
+import { IrcMessageMeta, IrcResponseMaker } from '../irc/ircWrapper'
+import { ConfigInterface } from '../ConfigInterface'
+var strftime = require('strftime').utc()
+
+interface LastSeen {
+    when: number
+    nick: string
+    what: string
+}
 
 class Seen extends Plugin {
 
     private db: NeDB;
 
-    constructor(responseMaker, config) {
+    constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
         super(responseMaker, config);
 
         this.command = 'seen';
@@ -73,7 +80,7 @@ class Seen extends Plugin {
                     return;
                 }
 
-                var lastSeen = results[0];
+                var lastSeen = results[0] as LastSeen
                 var time = strftime('%F %T', new Date(lastSeen['when']));
                 this.responseMaker.respond(
                     meta,
@@ -83,8 +90,8 @@ class Seen extends Plugin {
             });
     }
 
-    private outputLastMessageBy(nick, meta: IrcMessageMeta) {
-        this.db.findOne({ lower: nick.toLowerCase() }, (err, lastSeen) => {
+    private outputLastMessageBy(nick: string, meta: IrcMessageMeta) {
+        this.db.findOne({ lower: nick.toLowerCase() }, (err, lastSeen: LastSeen) => {
             if (err) {
                 this.responseMaker.respond(meta, 'An error occured');
                 return;

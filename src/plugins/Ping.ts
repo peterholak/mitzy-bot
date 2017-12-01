@@ -1,9 +1,10 @@
 import { Plugin, ParsedCommand } from '../Plugin'
-import { IrcMessageMeta } from '../irc/ircWrapper'
+import { IrcMessageMeta, IrcResponseMaker } from '../irc/ircWrapper'
+import { ConfigInterface } from '../ConfigInterface'
 
 class Ping extends Plugin {
 
-    constructor(responseMaker, config) {
+    constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
         super(responseMaker, config);
         this.command = 'ping';
         this.help = 'The bot replies. Can be useful to check for bot issues.';

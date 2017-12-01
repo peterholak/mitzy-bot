@@ -6,12 +6,13 @@ import DummyIrcClient from './irc/DummyIrcClient'
 import { IrcResponseMaker, IrcMessageMeta } from './irc/ircWrapper'
 import config from '../config'
 import * as irc from 'irc'
+import ClientInterface from './irc/ClientInterface'
 
 // TODO: split this module into some logical parts
 
 var lastReceivedTime: number
 
-export function createIrcClient(): irc.Client|DummyIrcClient {
+export function createIrcClient(): ClientInterface {
     lastReceivedTime = new Date().getTime()
 
     if (config.useDummyClient) {
@@ -26,7 +27,7 @@ function createDummyClient() {
 }
 
 function createRealClient() {
-    var clientConfig = {
+    var clientConfig: irc.IClientOpts = {
         channels: [ config.irc.channel ],
         port: config.irc.port,
         secure: config.irc.secure === true,
@@ -36,17 +37,17 @@ function createRealClient() {
     }
 
     if (config.irc.username !== null) {
-        clientConfig['userName'] = config.irc.username
+        clientConfig.userName = config.irc.username
     }
 
     if (config.irc.password !== null) {
-        clientConfig['password'] = config.irc.password
+        clientConfig.password = config.irc.password
     }
 
     return new irc.Client(config.irc.network, config.irc.nick, clientConfig)
 }
 
-export function parseCommand(message:string, commandRegex:RegExp): ParsedCommand {
+export function parseCommand(message:string, commandRegex:RegExp): ParsedCommand|null {
     var matches = message.match(commandRegex)
     if (matches === null) {
         return null
@@ -88,7 +89,15 @@ function outputHelp(responseMaker: IrcResponseMaker, pluginRegistry: PluginRegis
     return responseMaker.respond(messageMeta, plugin.help)
 }
 
-function notifyMatchingPlugin(responseMaker: IrcResponseMaker, pluginRegistry: PluginRegistry, message, commandRegex, ircTarget: string, nick: string, messageType: MessageType) {
+function notifyMatchingPlugin(
+    responseMaker: IrcResponseMaker,
+    pluginRegistry: PluginRegistry,
+    message: string,
+    commandRegex: RegExp,
+    ircTarget: string,
+    nick: string,
+    messageType: MessageType
+) {
     var meta: IrcMessageMeta = {
         messageType: messageType,
         nick: nick,
@@ -151,7 +160,7 @@ export function registerEventsAndConnect(responseMaker: IrcResponseMaker, plugin
         lastReceivedTime = new Date().getTime()
     })
 
-    client.addListener('error', function (err) {
+    client.addListener('error', (err: any) => {
         console.error('An error has occured:')
         console.error(err)
     })
@@ -160,17 +169,17 @@ export function registerEventsAndConnect(responseMaker: IrcResponseMaker, plugin
         console.log('Connected.')
     })
 
-    client.on('join', function(channel, nick, message) {
+    client.on('join', (channel: string, nick: string, message: string) => {
         if (nick === config.irc.nick) {
             console.log('Channel joined.')
         }
     })
 
     if (config.useDummyClient) {
-        client.startReadingCommandLine()
+        (client as DummyIrcClient).startReadingCommandLine()
     }else{
-        console.log('Connecting...')
-        client.connect()
+        console.log('Connecting...');
+        (client as irc.Client).connect()
     }
 }
 
