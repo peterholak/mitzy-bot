@@ -1,0 +1,23 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/node:10
+    steps:
+      - checkout
+      - run:
+          name: npm install
+          command: npm install
+      - run:
+          name: default config
+          command: cp config.ts.dist config.ts
+      - run:
+          name: compile
+          command: node_modules/.bin/tsc
+      - run:
+          name: compress
+          command: tar -cvzf bin.tar.gz bin
+      - store_artifacts:
+          path: bin.tar.gz
+          destination: outputs/
