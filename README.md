@@ -15,7 +15,7 @@ The code is quite ancient and thus ugly by today's standards, but works ok.
 ### In Docker
 - copy `config.ts.dist` to `config.ts` and edit any options you want to hard-code into the image (yeah, it's an old codebase, I didn't want to refactor it properly 😐)
 - build the image using the `Dockerfile` in the repo
-- when creating the container, you can override any settings by using `--set key value`, e.g. `--set irc.network chat.freenode.net`
+- when creating the container, you can override any settings by using arguments `--set key value`, e.g. `--set irc.network chat.freenode.net`
 - for volumes, ports, etc., see the config file
 
 ## Editing

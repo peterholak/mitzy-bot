@@ -27,8 +27,14 @@ export default function processConfig(config: ConfigInterface) {
 // Try to match the type of the original value, if it fits
 function coerceValue(newValue: string, originalValue: any) {
     if (typeof originalValue === 'number') {
-        const value = parseInt(newValue)
+        const value = parseFloat(newValue)
         return isNaN(value) ? newValue : value
+    }
+
+    if (typeof originalValue === 'boolean') {
+        if (newValue === 'true') return true
+        if (newValue === 'false') return false
+        return newValue
     }
 
     if (typeof originalValue === 'object') {

@@ -44,6 +44,7 @@ function createRealClient() {
         clientConfig.password = config.irc.password
     }
 
+    console.log(`Connecting to ${config.irc.network}:${config.irc.port}...`)
     return new irc.Client(config.irc.network, config.irc.nick, clientConfig)
 }
 
