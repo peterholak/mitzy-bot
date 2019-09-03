@@ -15,9 +15,8 @@ class Seen extends Plugin {
     private db: NeDB;
 
     constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
-        super(responseMaker, config);
+        super('seen', responseMaker, config);
 
-        this.command = 'seen';
         this.requiredArguments = 1;
         this.ignoreBots = false;
         this.help =

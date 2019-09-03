@@ -27,9 +27,8 @@ class Timezone extends Plugin {
     private timeFormat = 'YYYY-MM-DD hh:mm:ss.SSSA z(Z)';
 
     constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
-        super(responseMaker, config);
+        super('tz', responseMaker, config);
 
-        this.command = 'tz';
         this.commandAliases = [ 'timezone', 'time' ];
         this.requiredArguments = 1;
         this.help =

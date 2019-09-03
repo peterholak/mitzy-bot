@@ -26,9 +26,12 @@ export class Plugin {
     hasHttpInterface:boolean = false
 
     constructor(
+        command: string,
         protected responseMaker: IrcResponseMaker,
         protected config: ConfigInterface
-    ) { }
+    ) {
+        this.command = command
+    }
 
     onCommandCalled(command: ParsedCommand, meta: IrcMessageMeta) { }
     onMessagePosted(message: string, nick: string) { }

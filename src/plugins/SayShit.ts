@@ -13,7 +13,7 @@ class SayShit extends Plugin {
     private data: ShitEntry[]
 
     constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
-        super(responseMaker, config)
+        super('', responseMaker, config)
         this.isCallable = false
         this.data = config.pluginConfig['SayShit'].data
     }

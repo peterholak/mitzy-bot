@@ -9,8 +9,7 @@ class Eval extends Plugin {
     private languageAliases: {[alias: string]: string}
 
     constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
-        super(responseMaker, config);
-        this.command = 'eval';
+        super('eval', responseMaker, config);
         this.commandAliases = this.config.pluginConfig['Eval'].commandAliases;
         this.languageAliases = this.config.pluginConfig['Eval'].languageAliases;
         this.help =

@@ -5,8 +5,7 @@ import { ConfigInterface } from '../ConfigInterface'
 class Ping extends Plugin {
 
     constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
-        super(responseMaker, config);
-        this.command = 'ping';
+        super('ping', responseMaker, config);
         this.help = 'The bot replies. Can be useful to check for bot issues.';
     }
 

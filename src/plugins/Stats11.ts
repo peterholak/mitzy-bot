@@ -33,15 +33,14 @@ class Stats11 extends Plugin {
     private todaysWinnerDecided = false
     private todaysEntryWritten = false
     private timezone = 'America/New_York' // TODO: configurable
-    private interval: NodeJS.Timer
+    private interval: NodeJS.Timer|undefined
     private attempts: ElevenAttempt[] = []
     private cooldown: {[nick: string]: number} = {}
     private winningAttempt: ElevenAttempt|undefined
 
     constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
-        super(responseMaker, config)
+        super('stats11', responseMaker, config)
 
-        this.command = 'stats11'
         this.help = '11:11 stats. Arguments: "raw" = link to raw data, "all" = all-time stats, [1-12] = stats for a specific month this year, [year] = stats for a specific year, "board" = today\'s times'
         this.hasHttpInterface = true
 

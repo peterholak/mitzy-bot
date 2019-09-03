@@ -6,8 +6,8 @@ import { ConfigInterface } from '../ConfigInterface';
 class Subreddit extends Plugin {
 
     constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
-        super(responseMaker, config);
-        this.command = 'subreddit';
+        super('subreddit', responseMaker, config);
+
         this.requiredArguments = 1;
         this.help =
             'Shows a random post from the current hot posts in a specified subreddit\n' +

@@ -5,8 +5,7 @@ import { ConfigInterface } from '../ConfigInterface'
 class Source extends Plugin {
 
     constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
-        super(responseMaker, config);
-        this.command = 'source';
+        super('source', responseMaker, config);
         this.help = 'Displays a link to the bot\'s source code';
     }
 

@@ -1,6 +1,7 @@
 import ConfigInterface from './src/ConfigInterface'
+import processConfig from './src/processConfig'
 
-const config: ConfigInterface = {
+const config: ConfigInterface = processConfig({
     useDummyClient: true,
 
     http: {
@@ -77,6 +78,6 @@ const config: ConfigInterface = {
             }
         }
     }
-};
+});
 
 export default config;

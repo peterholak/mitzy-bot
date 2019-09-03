@@ -7,8 +7,7 @@ import { ConfigInterface } from '../ConfigInterface'
 
 class Ntpq extends Plugin {
     constructor(responseMaker: IrcResponseMaker, config: ConfigInterface) {
-        super(responseMaker, config)
-        this.command = 'ntpq'
+        super('ntpq', responseMaker, config)
         this.help = 'Displays a link to the output of the ntpq command.'
         this.hasHttpInterface = true
     }

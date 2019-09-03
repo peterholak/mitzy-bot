@@ -9,7 +9,7 @@ export enum CommandLine {
 export class DummyIrcClient implements ClientInterface {
 
     private listeners: { [event:string]: Function[] } = {}
-    private commandLine: readline.ReadLine
+    private commandLine!: readline.ReadLine
 
     constructor(private nick: string, private channel: string, useCommandLine: CommandLine = CommandLine.ReadCommandLine, private clientToTrigger?: DummyIrcClient) {
         if (useCommandLine === CommandLine.ReadCommandLine) {
@@ -44,7 +44,7 @@ export class DummyIrcClient implements ClientInterface {
     }
 
     on(event: string, listener: Function) {
-        this.addListener.apply(this, arguments)
+        this.addListener.apply(this, arguments as any)
         return this
     }
 
