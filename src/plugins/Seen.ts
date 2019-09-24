@@ -4,9 +4,10 @@ import { IrcMessageMeta, IrcResponseMaker } from '../irc/ircWrapper'
 import { ConfigInterface } from '../ConfigInterface'
 var strftime = require('strftime').utc()
 
-interface LastSeen {
+export interface LastSeen {
     when: number
     nick: string
+    lower: string
     what: string
 }
 
@@ -39,10 +40,11 @@ class Seen extends Plugin {
             return false;
         }
 
-        if (command.splitArguments[0] === '%anyone') {
-            this.outputLastMessageByAnyone(meta);
-        }else{
-            this.outputLastMessageBy(command.splitArguments[0], meta);
+        const nick = command.splitArguments[0]
+        switch (nick) {
+            case '%anyone': return this.outputLastMessageByAnyone(meta)
+            case '%activity': return this.outputActivityInfo(meta, command.splitArguments[1])
+            default: return this.outputLastMessageBy(command.splitArguments[0], meta)
         }
     }
 
@@ -109,6 +111,64 @@ class Seen extends Plugin {
             );
         });
     }
+
+    private outputActivityInfo(meta: IrcMessageMeta, timeframe: string|undefined) {
+        const query = this.activityQuery(timeframe)
+        if (query === undefined) {
+            this.responseMaker.respond(meta, "Unknown timeframe, use one of [hour, day, week, month, year, epoch].")
+            return
+        }
+
+        this.db.find<LastSeen>(query, (err, docs) => {
+            if (err) {
+                this.responseMaker.respond(meta, 'An error occured')
+                return
+            }
+
+            const uniqueNicks = deduplicateAndCountNicks(docs, this.config.knownBots)
+            this.responseMaker.respond(meta, `${uniqueNicks} unique nicks (minus duplicates and bots).`)
+        })
+    }
+
+    private activityQuery(timeframe: string|undefined) {
+        if (timeframe === 'epoch') {
+            return {}
+        }
+        const millis = timeframeToMillis(timeframe)
+        if (millis === undefined) {
+            return undefined
+        }
+        const cutoff = new Date().getTime() - millis
+        return { when: { $gt: cutoff } }
+    }
+}
+
+function timeframeToMillis(timeframe: string|undefined): number|undefined {
+    const HOUR_MS = 3_600_000
+    switch (timeframe) {
+        case 'hour': return HOUR_MS
+        case 'day': return 24 * HOUR_MS
+        case 'week': return 7 * 24 * HOUR_MS
+        case 'month': return 30 * 24 * HOUR_MS
+        case 'year': return 365 * 24 * HOUR_MS
+        default: return undefined
+    }
+}
+
+export function deduplicateAndCountNicks(docs: LastSeen[], bots: string[]) {
+    const nicks: {[nick: string]: true} = {}
+    docs.forEach(doc => {
+        if (bots.indexOf(doc.nick) !== -1) {
+            return
+        }
+
+        // trim trailing - and _, which are sometimes used when another connection is still active
+        const nickRoot = doc.lower.replace(/[-_]+$/, '')
+        if (nicks[nickRoot] === undefined) {
+            nicks[nickRoot] = true
+        }
+    })
+    return Object.keys(nicks).length
 }
 
 export default Seen;
